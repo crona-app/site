@@ -24,7 +24,7 @@ const pad = (value: number) => String(value).padStart(2, "0");
 
 let latestStable: { version: string; url: string; date: string | null } | undefined;
 try {
-  const release = (await loadGitHubReleases("https://github.com/webxsid/crona", 10)).find(
+  const release = (await loadGitHubReleases("https://github.com/webxsid/crona")).find(
     (item) => !item.draft && !item.prerelease && item.tag_name,
   );
   if (release?.tag_name)

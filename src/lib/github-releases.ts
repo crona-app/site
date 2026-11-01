@@ -1,3 +1,5 @@
+import { fetchGitHub, repoApiPath } from "./github-api";
+
 export interface GitHubReleaseAsset {
   name: string;
   browser_download_url: string;
@@ -15,11 +17,5 @@ export interface GitHubRelease {
 }
 
 export async function loadGitHubReleases(repoUrl: string, perPage = 20): Promise<GitHubRelease[]> {
-  const apiUrl = repoUrl.replace("https://github.com", "https://api.github.com/repos");
-  const response = await fetch(`${apiUrl}/releases?per_page=${perPage}`, {
-    headers: { Accept: "application/vnd.github+json", "User-Agent": "crona-site" },
-  });
-
-  if (!response.ok) throw new Error(`GitHub releases request failed: ${response.status}`);
-  return (await response.json()) as GitHubRelease[];
+  return fetchGitHub<GitHubRelease[]>(`${repoApiPath(repoUrl)}/releases?per_page=${perPage}`);
 }

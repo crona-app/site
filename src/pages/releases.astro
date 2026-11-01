@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { fetchGitHub, repoApiPath } from "../lib/github-api";
 import "./_releases/releases.scss";
 
 export const prerender = false;
@@ -161,14 +162,7 @@ function summaryFromReleaseBody(body = "") {
 
 async function loadAppReleases(app: AppId) {
   try {
-    const apiUrl = `${apps[app].repoUrl.replace("https://github.com", "https://api.github.com/repos")}/releases?per_page=20`;
-    const requestOptions = {
-      headers: { Accept: "application/vnd.github+json", "User-Agent": "crona-site" },
-      cf: { cacheTtl: 300, cacheEverything: true },
-    } as RequestInit & { cf: { cacheTtl: number; cacheEverything: boolean } };
-    const response = await fetch(apiUrl, requestOptions);
-    if (!response.ok) throw new Error("release request failed");
-    return ((await response.json()) as GitHubRelease[])
+    return (await fetchGitHub<GitHubRelease[]>(`${repoApiPath(apps[app].repoUrl)}/releases?per_page=20`))
       .filter((release) => !release.draft)
       .map((release): ReleaseCard => ({
         app,
