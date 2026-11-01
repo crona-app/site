@@ -1,0 +1,359 @@
+// Runtime diagram: three clients share one bus into the local daemon, which owns sqlite.
+// Lines are plain elements (not a stretched SVG) so arrowheads keep their shape at any width.
+
+$cycle: 7s;
+$caret: 4px;
+
+.runtime-arch {
+  align-self: center;
+  margin: 0;
+  min-width: 0;
+}
+
+.runtime-arch__machine {
+  border: 1px dashed var(--color-line-strong);
+  border-radius: 14px;
+  display: grid;
+  justify-items: center;
+  padding: 38px clamp(14px, 3vw, 28px) 28px;
+  position: relative;
+}
+
+.runtime-arch__machine-label {
+  background: var(--color-page);
+  color: var(--color-muted);
+  font: 0.64rem var(--font-mono);
+  left: 18px;
+  letter-spacing: 0.08em;
+  padding: 0 8px;
+  position: absolute;
+  text-transform: uppercase;
+  top: -0.5em;
+}
+
+.runtime-arch__clients {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  width: 100%;
+}
+
+.runtime-arch__node {
+  align-content: center;
+  background: var(--color-page);
+  border: 1px solid var(--color-line-strong);
+  border-radius: 6px;
+  display: grid;
+  gap: 4px;
+  justify-items: center;
+  min-height: 72px;
+  padding: 10px 8px;
+  position: relative;
+  text-align: center;
+  z-index: 1;
+}
+
+.runtime-arch__node strong {
+  color: var(--color-ink);
+  font: 500 0.78rem var(--font-mono);
+}
+
+.runtime-arch__node span {
+  color: var(--color-muted);
+  font: 0.64rem var(--font-mono);
+}
+
+.runtime-arch__icon {
+  color: var(--color-muted);
+}
+
+.runtime-arch__node--daemon {
+  border-color: var(--color-accent);
+  min-width: min(240px, 72%);
+}
+
+.runtime-arch__node--storage {
+  min-width: min(180px, 56%);
+}
+
+.runtime-arch__node--daemon strong,
+.runtime-arch__node--storage strong,
+.runtime-arch__node--daemon .runtime-arch__icon,
+.runtime-arch__node--storage .runtime-arch__icon {
+  color: var(--color-accent-strong);
+}
+
+// Connector area between the clients and the daemon. Column centres sit at 1/6, 3/6 and 5/6
+// because the client grid has three equal columns.
+.runtime-arch__links {
+  height: 64px;
+  position: relative;
+  width: 100%;
+}
+
+.runtime-arch__links--storage {
+  height: 44px;
+}
+
+.runtime-arch__link {
+  background: var(--color-line-strong);
+  overflow: visible;
+  position: absolute;
+}
+
+.runtime-arch__link--tui,
+.runtime-arch__link--cli,
+.runtime-arch__link--mac,
+.runtime-arch__link--storage {
+  top: 0;
+  width: 1px;
+}
+
+.runtime-arch__link--tui {
+  height: 50%;
+  left: calc(100% / 6);
+}
+
+.runtime-arch__link--cli,
+.runtime-arch__link--storage {
+  height: 100%;
+  left: 50%;
+}
+
+.runtime-arch__link--mac {
+  height: 50%;
+  left: calc(500% / 6);
+}
+
+.runtime-arch__link--bus-left,
+.runtime-arch__link--bus-right {
+  height: 1px;
+  top: 50%;
+  width: calc(100% / 3);
+}
+
+.runtime-arch__link--bus-left {
+  left: calc(100% / 6);
+}
+
+.runtime-arch__link--bus-right {
+  left: 50%;
+}
+
+// Two-way traffic: carets point up into each client and down into the daemon and sqlite.
+.runtime-arch__link--tui::before,
+.runtime-arch__link--cli::before,
+.runtime-arch__link--mac::before,
+.runtime-arch__link--storage::before {
+  border-bottom: $caret solid var(--color-accent);
+  border-left: $caret solid transparent;
+  border-right: $caret solid transparent;
+  content: "";
+  left: -$caret + 0.5px;
+  position: absolute;
+  top: 0;
+}
+
+.runtime-arch__links::after {
+  border-left: $caret solid transparent;
+  border-right: $caret solid transparent;
+  border-top: $caret solid var(--color-accent);
+  bottom: 0;
+  content: "";
+  left: calc(50% - #{$caret} + 0.5px);
+  position: absolute;
+}
+
+.runtime-arch__label {
+  background: var(--color-page);
+  color: var(--color-muted);
+  font: 0.6rem var(--font-mono);
+  left: calc(50% + 10px);
+  letter-spacing: 0.03em;
+  padding: 0 4px;
+  position: absolute;
+  top: 62%;
+  white-space: nowrap;
+}
+
+.runtime-arch__label--storage {
+  top: 32%;
+}
+
+.runtime-arch__caption {
+  align-items: center;
+  color: var(--color-muted);
+  display: flex;
+  font: 0.68rem/1.5 var(--font-mono);
+  gap: 8px;
+  justify-content: center;
+  margin-top: 14px;
+  text-align: center;
+}
+
+.runtime-arch__caption svg {
+  color: var(--color-accent);
+  flex: 0 0 auto;
+}
+
+// Sync pulse: a CLI write travels to the daemon, lands in sqlite, then fans out to the TUI
+// and Mac app. It runs only once the section is revealed, and never with reduced motion.
+@mixin spark($name, $prop, $from, $to, $start, $end) {
+  @keyframes #{$name} {
+    0%,
+    #{$start} {
+      #{$prop}: $from;
+      opacity: 0;
+    }
+
+    #{$start + 1%},
+    #{$end - 1%} {
+      opacity: 1;
+    }
+
+    #{$end},
+    100% {
+      #{$prop}: $to;
+      opacity: 0;
+    }
+  }
+}
+
+@mixin glow($name, $start, $end) {
+  @keyframes #{$name} {
+    0%,
+    #{$start},
+    #{$end},
+    100% {
+      border-color: var(--glow-rest);
+      box-shadow: none;
+    }
+
+    #{$start + 3%},
+    #{$end - 3%} {
+      border-color: var(--color-accent-strong);
+      box-shadow: 0 0 18px color-mix(in srgb, var(--color-accent) 32%, transparent);
+    }
+  }
+}
+
+@include spark(runtime-arch-down-cli, top, 0%, 100%, 6%, 20%);
+@include spark(runtime-arch-down-storage, top, 0%, 100%, 28%, 38%);
+@include spark(runtime-arch-out-left, left, 100%, 0%, 44%, 52%);
+@include spark(runtime-arch-out-right, left, 0%, 100%, 44%, 52%);
+@include spark(runtime-arch-up, top, 100%, 0%, 52%, 60%);
+@include glow(runtime-arch-glow-cli, 0%, 12%);
+@include glow(runtime-arch-glow-daemon, 18%, 32%);
+@include glow(runtime-arch-glow-storage, 36%, 48%);
+@include glow(runtime-arch-glow-clients, 58%, 72%);
+
+.runtime-arch__link::after {
+  background: radial-gradient(
+    closest-side,
+    var(--color-accent-strong),
+    color-mix(in srgb, var(--color-accent) 40%, transparent) 60%,
+    transparent
+  );
+  content: "";
+  opacity: 0;
+  position: absolute;
+}
+
+.runtime-arch__link--tui::after,
+.runtime-arch__link--cli::after,
+.runtime-arch__link--mac::after,
+.runtime-arch__link--storage::after {
+  height: 18px;
+  left: -2px;
+  transform: translateY(-50%);
+  width: 5px;
+}
+
+.runtime-arch__link--bus-left::after,
+.runtime-arch__link--bus-right::after {
+  height: 5px;
+  top: -2px;
+  transform: translateX(-50%);
+  width: 26px;
+}
+
+.runtime-arch__node {
+  --glow-rest: var(--color-line-strong);
+}
+
+.runtime-arch__node--daemon {
+  --glow-rest: var(--color-accent);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .is-visible .runtime-arch {
+    .runtime-arch__link--cli::after {
+      animation: runtime-arch-down-cli $cycle linear infinite;
+    }
+
+    .runtime-arch__link--storage::after {
+      animation: runtime-arch-down-storage $cycle linear infinite;
+    }
+
+    .runtime-arch__link--bus-left::after {
+      animation: runtime-arch-out-left $cycle linear infinite;
+    }
+
+    .runtime-arch__link--bus-right::after {
+      animation: runtime-arch-out-right $cycle linear infinite;
+    }
+
+    .runtime-arch__link--tui::after,
+    .runtime-arch__link--mac::after {
+      animation: runtime-arch-up $cycle linear infinite;
+    }
+
+    .runtime-arch__node--cli {
+      animation: runtime-arch-glow-cli $cycle ease-in-out infinite;
+    }
+
+    .runtime-arch__node--daemon {
+      animation: runtime-arch-glow-daemon $cycle ease-in-out infinite;
+    }
+
+    .runtime-arch__node--storage {
+      animation: runtime-arch-glow-storage $cycle ease-in-out infinite;
+    }
+
+    .runtime-arch__node--tui,
+    .runtime-arch__node--mac {
+      animation: runtime-arch-glow-clients $cycle ease-in-out infinite;
+    }
+  }
+}
+
+@media (max-width: 820px) {
+  .runtime-arch {
+    margin-top: 34px;
+  }
+
+  .runtime-arch__machine {
+    padding: 30px 10px 22px;
+  }
+
+  .runtime-arch__clients {
+    gap: 6px;
+  }
+
+  .runtime-arch__node {
+    min-height: 64px;
+    padding: 8px 4px;
+  }
+
+  .runtime-arch__node strong {
+    font-size: 0.64rem;
+  }
+
+  .runtime-arch__node span {
+    font-size: 0.56rem;
+  }
+
+  .runtime-arch__label {
+    font-size: 0.56rem;
+  }
+}
