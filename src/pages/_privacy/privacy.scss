@@ -94,3 +94,24 @@
 .privacy-section+.privacy-section {
   margin-top: 24px;
 }
+
+@media (min-width: 960px) {
+  .privacy-layout {
+    align-items: start;
+    display: grid;
+    gap: var(--space-6);
+    grid-template-columns: minmax(240px, 300px) minmax(0, var(--measure));
+  }
+
+  .privacy-toc {
+    margin-bottom: 0;
+    max-height: calc(100vh - var(--site-header-block) - 48px);
+    overflow-y: auto;
+    position: sticky;
+    top: calc(var(--site-header-block) + 24px);
+  }
+
+  .privacy-toc a {
+    padding: 9px 16px;
+  }
+}
