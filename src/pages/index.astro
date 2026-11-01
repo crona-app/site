@@ -70,13 +70,28 @@ import "./_home/index.scss";
         of the day.
       </p>
     </div>
-    <div class="home-workspace-screen">
+    <div class="home-workspace-screen" data-workspace-stack>
       <div class="home-workspace-screen__canvas" aria-label="Crona workspace views" role="group">
         <MeshGradient class="home-workspace-screen__mesh--desktop" variant="workspace" />
         <button
-          class="home-workspace-screen__image home-workspace-screen__image--momentum"
+          class="home-workspace-screen__image home-workspace-screen__image--review"
           type="button"
           data-workspace-open="0"
+          data-workspace-pos="left"
+          aria-label="Show Review view"
+        >
+          <AppScreenshot
+            name="review"
+            alt="Crona Review terminal view comparing estimated and logged focus with mood, energy, and recovery across a week"
+            loading="eager"
+            sizes="(min-width: 1024px) 58vw, 100vw"
+          />
+        </button>
+        <button
+          class="home-workspace-screen__image home-workspace-screen__image--momentum"
+          type="button"
+          data-workspace-open="1"
+          data-workspace-pos="center"
           aria-label="Enlarge Momentum view"
         >
           <AppScreenshot
@@ -87,52 +102,49 @@ import "./_home/index.scss";
           />
         </button>
         <button
-          class="home-workspace-screen__image home-workspace-screen__image--rollup"
-          type="button"
-          data-workspace-open="1"
-          aria-label="Enlarge Rollup view"
-        >
-          <AppScreenshot
-            name="rollup"
-            alt="Crona Rollup terminal view comparing estimated and logged focus across a date range"
-            loading="eager"
-            sizes="(min-width: 1024px) 48vw, 100vw"
-          />
-        </button>
-        <button
           class="home-workspace-screen__image home-workspace-screen__image--summary"
           type="button"
           data-workspace-open="2"
-          aria-label="Enlarge Summary view"
+          data-workspace-pos="right"
+          aria-label="Show Summary view"
         >
           <AppScreenshot
             name="summary"
-            alt="Crona Summary terminal view showing focus, issues, habits, agenda, wellbeing, and momentum"
+            alt="Crona Today view with the day summary showing focus, issues, habits, accountability, wellbeing, and momentum"
             loading="eager"
-            sizes="(min-width: 1024px) 48vw, 100vw"
+            sizes="(min-width: 1024px) 58vw, 100vw"
           />
         </button>
+        <WorkspaceCard
+          variant="review"
+          label="review"
+          description="Compare estimated time with logged focus, mood, and energy."
+          select={0}
+        />
         <WorkspaceCard
           variant="momentum"
           label="momentum"
           description="Track habits and focus across the weeks."
-        />
-        <WorkspaceCard
-          variant="rollup"
-          label="rollup"
-          description="Compare estimated time with logged focus."
+          select={1}
         />
         <WorkspaceCard
           variant="summary"
           label="summary"
           description="Reconstruct the day without reconstructing it from memory."
+          select={2}
         />
       </div>
     </div>
     <div class="home-workflow__footer">
-      <span>rollup / momentum / summary · one local record</span><a href="https://docs.crona.work/"
-        >read the docs <span aria-hidden="true">→</span></a
-      >
+      <div class="home-workspace-screen__controls">
+        <button type="button" data-workspace-step="-1" aria-label="Previous workspace view">
+          <span aria-hidden="true">←</span>
+        </button>
+        <span data-workspace-label aria-live="polite">02 / 03 · momentum</span>
+        <button type="button" data-workspace-step="1" aria-label="Next workspace view">
+          <span aria-hidden="true">→</span>
+        </button>
+      </div><a href="https://docs.crona.work/">read the docs <span aria-hidden="true">→</span></a>
     </div>
   </section>
 

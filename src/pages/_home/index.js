@@ -166,3 +166,66 @@ if (demoVideo) {
   syncTimeState();
   if (!reducedMotion.matches) demoVideo.play().catch(() => {});
 }
+
+const workspaceStack = document.querySelector("[data-workspace-stack]");
+
+if (workspaceStack) {
+  const stackImages = [...workspaceStack.querySelectorAll("[data-workspace-open]")];
+  const stackCards = [...workspaceStack.querySelectorAll("[data-workspace-select]")];
+  const stackSteps = [...document.querySelectorAll("[data-workspace-step]")];
+  const stackLabel = document.querySelector("[data-workspace-label]");
+  const stackNames = stackCards.map((card) => card.querySelector(".home-workspace-screen__key")?.textContent ?? "");
+  const stackReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  let stackActive = 1;
+
+  // Ring order matches the DOM: left neighbour, active, right neighbour.
+  const positionFor = (index) => {
+    const offset = (index - stackActive + stackImages.length) % stackImages.length;
+    return offset === 0 ? "center" : offset === 1 ? "right" : "left";
+  };
+
+  const applyStack = () => {
+    stackImages.forEach((image, index) => {
+      const pos = positionFor(index);
+      image.dataset.workspacePos = pos;
+      const name = stackNames[index];
+      image.setAttribute("aria-label", pos === "center" ? `Enlarge ${name} view` : `Show ${name} view`);
+    });
+    stackCards.forEach((card, index) => {
+      card.dataset.workspacePos = positionFor(index);
+      card.setAttribute("aria-pressed", String(index === stackActive));
+    });
+    if (stackLabel) {
+      const count = String(stackImages.length).padStart(2, "0");
+      stackLabel.textContent = `${String(stackActive + 1).padStart(2, "0")} / ${count} · ${stackNames[stackActive]}`;
+    }
+  };
+
+  const selectStack = (index) => {
+    const next = (index + stackImages.length) % stackImages.length;
+    if (next === stackActive) return;
+    stackActive = next;
+    if (document.startViewTransition && !stackReducedMotion.matches) {
+      document.startViewTransition(applyStack);
+    } else {
+      applyStack();
+    }
+  };
+
+  // Capture phase: a side screenshot rotates to the front before the lightbox opener sees the click.
+  workspaceStack.addEventListener(
+    "click",
+    (event) => {
+      const image = event.target.closest("[data-workspace-open]");
+      if (!image || image.dataset.workspacePos === "center") return;
+      event.stopPropagation();
+      selectStack(stackImages.indexOf(image));
+    },
+    true,
+  );
+  stackCards.forEach((card, index) => card.addEventListener("click", () => selectStack(index)));
+  stackSteps.forEach((button) =>
+    button.addEventListener("click", () => selectStack(stackActive + Number(button.dataset.workspaceStep))),
+  );
+  applyStack();
+}

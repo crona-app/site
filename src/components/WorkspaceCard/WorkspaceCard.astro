@@ -2,13 +2,31 @@
 interface Props {
   description: string;
   label: string;
-  variant: "momentum" | "rollup" | "summary";
+  variant: "momentum" | "review" | "summary";
+  /** Landing stack only: render as a button that brings this view to the front. */
+  select?: number;
 }
 
-const { description, label, variant } = Astro.props as Props;
+const { description, label, variant, select } = Astro.props as Props;
+const classes = ["home-workspace-screen__card", `home-workspace-screen__card--${variant}`];
 ---
 
-<div class:list={["home-workspace-screen__card", `home-workspace-screen__card--${variant}`]}>
-  <span class="home-workspace-screen__key">{label}</span>
-  <p>{description}</p>
-</div>
+{
+  select === undefined ? (
+    <div class:list={classes}>
+      <span class="home-workspace-screen__key">{label}</span>
+      <p>{description}</p>
+    </div>
+  ) : (
+    <button
+      class:list={classes}
+      type="button"
+      data-workspace-select={select}
+      data-workspace-pos={["left", "center", "right"][select]}
+      aria-pressed={select === 1 ? "true" : "false"}
+    >
+      <span class="home-workspace-screen__key">{label}</span>
+      <p>{description}</p>
+    </button>
+  )
+}

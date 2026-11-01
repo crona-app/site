@@ -1,7 +1,7 @@
 ---
 interface Props {
   class?: string;
-  variant?: "momentum" | "rollup" | "summary" | "workspace" | "warm" | "cool";
+  variant?: "momentum" | "review" | "summary" | "workspace" | "warm" | "cool";
 }
 
 const { class: className, variant = "workspace" } = Astro.props as Props;
@@ -78,7 +78,7 @@ const { class: className, variant = "workspace" } = Astro.props as Props;
     --mesh-d: transparent;
   }
 
-  .mesh-gradient--rollup {
+  .mesh-gradient--review {
     --mesh-a: color-mix(in srgb, var(--color-warning) 24%, transparent);
     --mesh-b: color-mix(in srgb, #995d35 18%, transparent);
     --mesh-c: color-mix(in srgb, var(--color-accent) 12%, transparent);

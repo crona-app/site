@@ -27,8 +27,23 @@ import WorkspaceCard from "../WorkspaceCard/WorkspaceCard.astro";
     >
     <div class="home-workspace-carousel__slides">
       <article class="home-workspace-carousel__slide" data-workspace-slide="0">
+        <MeshGradient variant="review" /><div class="home-workspace-carousel__content">
+          <h2 id="workspace-carousel-title">Review</h2><div class="home-workspace-carousel__image">
+            <AppScreenshot
+              name="review"
+              alt="Crona Review terminal view comparing estimated and logged focus with mood, energy, and recovery across a week"
+              sizes="(min-width: 1024px) 78vw, 92vw"
+            />
+          </div><WorkspaceCard
+            variant="review"
+            label="review"
+            description="Compare estimated time with logged focus, mood, and energy."
+          />
+        </div>
+      </article>
+      <article class="home-workspace-carousel__slide" data-workspace-slide="1" hidden>
         <MeshGradient variant="momentum" /><div class="home-workspace-carousel__content">
-          <h2 id="workspace-carousel-title">Momentum</h2><div
+          <h2>Momentum</h2><div
             class="home-workspace-carousel__image"
           >
             <AppScreenshot
@@ -40,21 +55,6 @@ import WorkspaceCard from "../WorkspaceCard/WorkspaceCard.astro";
             variant="momentum"
             label="momentum"
             description="Track habits and focus across the weeks."
-          />
-        </div>
-      </article>
-      <article class="home-workspace-carousel__slide" data-workspace-slide="1" hidden>
-        <MeshGradient variant="rollup" /><div class="home-workspace-carousel__content">
-          <h2>Rollup</h2><div class="home-workspace-carousel__image">
-            <AppScreenshot
-              name="rollup"
-              alt="Crona Rollup terminal view comparing estimated and logged focus across a date range"
-              sizes="(min-width: 1024px) 78vw, 92vw"
-            />
-          </div><WorkspaceCard
-            variant="rollup"
-            label="rollup"
-            description="Compare estimated time with logged focus."
           />
         </div>
       </article>
@@ -151,9 +151,11 @@ import WorkspaceCard from "../WorkspaceCard/WorkspaceCard.astro";
     };
     const moveWorkspaceSlide = (direction: number) => setWorkspaceSlide(workspaceIndex + direction);
     workspaceOpeners.forEach((button) =>
-      button.addEventListener("click", () =>
-        openWorkspaceCarousel(Number(button.dataset.workspaceOpen)),
-      ),
+      button.addEventListener("click", () => {
+        // Side screenshots in the landing stack rotate to the front instead of opening.
+        if (button.dataset.workspacePos && button.dataset.workspacePos !== "center") return;
+        openWorkspaceCarousel(Number(button.dataset.workspaceOpen));
+      }),
     );
     workspacePrevious?.addEventListener("click", () => moveWorkspaceSlide(-1));
     workspaceNext?.addEventListener("click", () => moveWorkspaceSlide(1));
