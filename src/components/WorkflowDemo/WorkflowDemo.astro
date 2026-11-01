@@ -1,13 +1,201 @@
 ---
-import TuiDemo from "./TuiDemo";
+// Real recordings of the crona TUI, one per workflow. The casts live in public/demos and are
+// produced by scripts/record-demos/record.sh, so re-record them when the TUI changes.
 import "./WorkflowDemo.scss";
-import "../WorkflowDemos/tui/TuiShell.scss";
-interface Props {
-  variant?: "core" | "mac";
-}
-const { variant = "core" } = Astro.props as Props;
+
+const flows = [
+  {
+    id: "start-session",
+    label: "Start a session",
+    description: "Pick today's top task, start a Pomodoro, and end it with a note on what got done.",
+  },
+  {
+    id: "create-issue",
+    label: "Create an issue",
+    description: "Add an issue with an estimate, due date and tags without leaving the keyboard.",
+  },
+  {
+    id: "bulk-add",
+    label: "Add issues in bulk",
+    description: "Paste a list of - lines, check what Crona parsed, and import them in one go.",
+  },
+  {
+    id: "tour",
+    label: "Look around",
+    description: "Today, Work, Insights, Log and System: five tabs over the same local record.",
+  },
+];
 ---
 
-<div class:list={["workflow-demo", `workflow-demo--${variant}`]} data-workflow-demo>
-  <TuiDemo client:only="react" />
+<div class="workflow-demo" data-workflow-demo>
+  <div class="workflow-demo__window">
+    <div class="workflow-demo__bar" aria-hidden="true">
+      <span class="workflow-demo__lights"><i></i><i></i><i></i></span>
+      <span class="workflow-demo__title">~ crona</span>
+    </div>
+    <div
+      class="workflow-demo__stage"
+      data-workflow-stage
+      role="img"
+      aria-label={`Recording of the crona terminal app: ${flows[0].label}`}
+    >
+    </div>
+  </div>
+  <div class="workflow-demo__status">
+    <div class="workflow-demo__controls">
+      <button type="button" data-workflow-toggle aria-label="Pause recording">pause</button>
+      <button type="button" data-workflow-replay aria-label="Replay recording">replay</button>
+    </div>
+    <span data-workflow-time>00:00</span>
+  </div>
+  <div class="workflow-demo__flows" role="tablist" aria-label="Choose a workflow">
+    {
+      flows.map((flow, index) => (
+        <button
+          type="button"
+          role="tab"
+          class:list={[index === 0 && "is-active"]}
+          aria-selected={index === 0 ? "true" : "false"}
+          data-workflow-flow={flow.id}
+          data-label={flow.label}
+          data-description={flow.description}
+        >
+          <span>[{index + 1}]</span> {flow.label}
+        </button>
+      ))
+    }
+  </div>
+  <p class="workflow-demo__description" data-workflow-description aria-live="polite">
+    {flows[0].description}
+  </p>
 </div>
+
+<script>
+  import * as AsciinemaPlayer from "asciinema-player";
+  import "asciinema-player/dist/bundle/asciinema-player.css";
+
+  type Player = ReturnType<typeof AsciinemaPlayer.create>;
+
+  const root = document.querySelector<HTMLElement>("[data-workflow-demo]");
+  const stage = root?.querySelector<HTMLElement>("[data-workflow-stage]");
+
+  if (root && stage) {
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>("[data-workflow-flow]")];
+    const toggle = root.querySelector<HTMLButtonElement>("[data-workflow-toggle]");
+    const replay = root.querySelector<HTMLButtonElement>("[data-workflow-replay]");
+    const time = root.querySelector<HTMLElement>("[data-workflow-time]");
+    const description = root.querySelector<HTMLElement>("[data-workflow-description]");
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // Phones get 60-column recordings; the 160-column ones shrink past reading size there.
+    const narrowScreen = window.matchMedia("(max-width: 640px)");
+
+    let player: Player | undefined;
+    let current = 0;
+    let playing = false;
+    let ticker: number | undefined;
+
+    const format = (seconds: number) => {
+      const whole = Math.max(0, Math.floor(seconds));
+      return `${String(Math.floor(whole / 60)).padStart(2, "0")}:${String(whole % 60).padStart(2, "0")}`;
+    };
+
+    const setPlaying = (value: boolean) => {
+      playing = value;
+      if (toggle) {
+        toggle.textContent = value ? "pause" : "play";
+        toggle.setAttribute("aria-label", value ? "Pause recording" : "Play recording");
+      }
+    };
+
+    // The active tab doubles as a progress bar for its recording.
+    const tick = async () => {
+      if (!player) return;
+      const [elapsed, duration] = await Promise.all([
+        player.getCurrentTime(),
+        player.getDuration(),
+      ]);
+      if (time) time.textContent = format(elapsed ?? 0);
+      const progress = duration ? Math.min(100, ((elapsed ?? 0) / duration) * 100) : 0;
+      tabs[current]?.style.setProperty("--segment-progress", `${progress}%`);
+    };
+
+    const load = (index: number, autoPlay: boolean) => {
+      current = index;
+      const tab = tabs[index];
+      tabs.forEach((item, i) => {
+        const active = i === index;
+        item.classList.toggle("is-active", active);
+        item.setAttribute("aria-selected", String(active));
+        item.style.setProperty("--segment-progress", "0%");
+      });
+      if (description) description.textContent = tab.dataset.description ?? "";
+      stage.setAttribute("aria-label", `Recording of the crona terminal app: ${tab.dataset.label}`);
+
+      player?.dispose();
+      const suffix = narrowScreen.matches ? ".narrow" : "";
+      stage.classList.toggle("is-narrow", narrowScreen.matches);
+      player = AsciinemaPlayer.create(`/demos/${tab.dataset.workflowFlow}${suffix}.cast`, stage, {
+        autoPlay,
+        controls: false,
+        fit: "width",
+        idleTimeLimit: 2,
+        // Show the final frame as the still for reduced motion and before playback starts.
+        poster: "npt:0:3",
+        terminalFontFamily: getComputedStyle(root).getPropertyValue("--font-mono"),
+        theme: "crona",
+      });
+      setPlaying(autoPlay);
+      player.addEventListener("play", () => setPlaying(true));
+      player.addEventListener("playing", () => setPlaying(true));
+      player.addEventListener("pause", () => setPlaying(false));
+      player.addEventListener("ended", () => {
+        setPlaying(false);
+        tabs[current]?.style.setProperty("--segment-progress", "100%");
+        // Roll on to the next workflow so the hero keeps moving.
+        if (!reducedMotion) window.setTimeout(() => load((current + 1) % tabs.length, true), 1600);
+      });
+    };
+
+    tabs.forEach((tab, index) => {
+      tab.addEventListener("click", () => load(index, true));
+      tab.addEventListener("keydown", (event) => {
+        if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
+        event.preventDefault();
+        const next =
+          event.key === "ArrowRight"
+            ? (index + 1) % tabs.length
+            : (index - 1 + tabs.length) % tabs.length;
+        tabs[next].focus();
+        load(next, true);
+      });
+    });
+    narrowScreen.addEventListener("change", () => {
+      if (player) load(current, playing);
+    });
+    toggle?.addEventListener("click", () => {
+      if (!player) return;
+      if (playing) player.pause();
+      else player.play();
+    });
+    replay?.addEventListener("click", async () => {
+      if (!player) return;
+      await player.seek(0);
+      player.play();
+    });
+
+    // Start when the demo scrolls into view, and stop ticking while it is off screen.
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          if (!player) load(0, !reducedMotion);
+          ticker ??= window.setInterval(tick, 250);
+        } else {
+          if (ticker) window.clearInterval(ticker);
+          ticker = undefined;
+        }
+      },
+      { threshold: 0.2 },
+    );
+    observer.observe(root);
+  }
+</script>
