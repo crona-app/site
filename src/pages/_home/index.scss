@@ -1368,6 +1368,11 @@ body.has-lotr-overlay {
   font-family: var(--font-mono);
 }
 
+.install-modal__platforms {
+  font: 0.74rem var(--font-mono);
+  margin-bottom: 18px !important;
+}
+
 .install-modal__steps {
   counter-reset: install-step;
   display: grid;

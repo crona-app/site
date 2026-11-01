@@ -1,11 +1,12 @@
 ---
-import { installDocsUrl, installPlatforms, packageManagers, runCommand } from "../../data/install";
+import { installDocsUrl, installMethods, runCommand } from "../../data/install";
 
 interface Props {
   latestVersion?: string;
 }
 
 const { latestVersion } = Astro.props;
+const methods = installMethods;
 ---
 
 <div class="install-modal" data-install-modal hidden>
@@ -38,82 +39,74 @@ const { latestVersion } = Astro.props;
         )
       }
     </p>
-    <div class="install-modal__tabs" role="tablist" aria-label="Installation platform">
+    <div class="install-modal__tabs" role="tablist" aria-label="Install method">
       {
-        installPlatforms.map((platform, index) => (
+        methods.map((method, index) => (
           <button
             type="button"
             role="tab"
             aria-selected={index === 0 ? "true" : "false"}
-            aria-controls={`install-panel-${platform.id}`}
-            id={`install-tab-${platform.id}`}
-            data-install-platform={platform.id}
+            aria-controls={`install-panel-${method.id}`}
+            id={`install-tab-${method.id}`}
+            data-install-platform={method.id}
           >
-            {platform.label}
+            {method.label}
           </button>
         ))
       }
     </div>
     <div class="install-modal__panels">
       {
-        installPlatforms.map((platform, index) => {
-          const manager = packageManagers[platform.manager];
-          return (
-            <div
-              class="install-modal__panel"
-              role="tabpanel"
-              id={`install-panel-${platform.id}`}
-              aria-labelledby={`install-tab-${platform.id}`}
-              data-install-panel={platform.id}
-              hidden={index !== 0}
-            >
-              <ol class="install-modal__steps">
-                <li>
-                  <p>Install with {manager.label}:</p>
-                  <div class="install-modal__command">
-                    <div class="install-modal__command-line">
-                      {manager.install.map((line) => (
-                        <code>{line}</code>
-                      ))}
-                    </div>
-                    <button type="button" data-install-copy>
-                      [ copy ]
-                    </button>
+        methods.map((method, index) => (
+          <div
+            class="install-modal__panel"
+            role="tabpanel"
+            id={`install-panel-${method.id}`}
+            aria-labelledby={`install-tab-${method.id}`}
+            data-install-panel={method.id}
+            hidden={index !== 0}
+          >
+            <p class="install-modal__platforms">For {method.platforms}</p>
+            <ol class="install-modal__steps">
+              <li>
+                <p>{method.intro}</p>
+                <div class="install-modal__command">
+                  <div class="install-modal__command-line">
+                    {method.install.map((line) => (
+                      <code>{line}</code>
+                    ))}
                   </div>
-                </li>
-                <li>
-                  <p>Start it. The daemon starts on its own the first time.</p>
-                  <div class="install-modal__command">
-                    <div class="install-modal__command-line">
-                      <code>{runCommand}</code>
-                    </div>
-                    <button type="button" data-install-copy>
-                      [ copy ]
-                    </button>
+                  <button type="button" data-install-copy>
+                    [ copy ]
+                  </button>
+                </div>
+              </li>
+              <li>
+                <p>Start it. The daemon starts on its own the first time.</p>
+                <div class="install-modal__command">
+                  <div class="install-modal__command-line">
+                    <code>{runCommand}</code>
                   </div>
-                </li>
-              </ol>
-              <div class="install-modal__note">
-                <p>Includes: crona · crona-tui · crona-daemon</p>
-                <p>
-                  Update later with <code>{manager.update}</code>
-                </p>
-              </div>
-              {platform.alternative && (
-                <a class="install-modal__companion" href={platform.alternative.href} rel="noreferrer">
-                  {platform.alternative.text}
-                  <span aria-hidden="true">→</span>
-                </a>
-              )}
-              {platform.id === "macos" && (
-                <a class="install-modal__companion" href="/mac/">
-                  Want quick access from the menu bar? Get the companion
-                  <span aria-hidden="true">→</span>
-                </a>
-              )}
+                  <button type="button" data-install-copy>
+                    [ copy ]
+                  </button>
+                </div>
+              </li>
+            </ol>
+            <div class="install-modal__note">
+              <p>Includes: crona · crona-tui · crona-daemon</p>
+              <p>
+                Update later: <code>{method.update}</code>
+              </p>
             </div>
-          );
-        })
+            {method.id === "brew" && (
+              <a class="install-modal__companion" href="/mac/">
+                On a Mac? Get the menu bar companion
+                <span aria-hidden="true">→</span>
+              </a>
+            )}
+          </div>
+        ))
       }
     </div>
     <div class="install-modal__footer">
@@ -140,13 +133,15 @@ const { latestVersion } = Astro.props;
 
     const detectedPlatform = () => {
       const userAgent = navigator.userAgent.toLowerCase();
-      if (userAgent.includes("windows")) return "windows";
-      if (userAgent.includes("linux") && !userAgent.includes("android")) return "linux";
-      return "macos";
+      return userAgent.includes("windows") ? "scoop" : "brew";
     };
 
+    // Older links used OS names; map them onto the matching method.
+    const legacyHashes: Record<string, string> = { macos: "brew", linux: "brew", windows: "scoop" };
+
     const platformFromHash = () => {
-      const value = window.location.hash.replace(/^#install-?/, "").toLowerCase();
+      const raw = window.location.hash.replace(/^#install-?/, "").toLowerCase();
+      const value = legacyHashes[raw] ?? raw;
       return validPlatforms.has(value) ? value : detectedPlatform();
     };
 

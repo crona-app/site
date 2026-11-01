@@ -1,51 +1,59 @@
 // Install instructions shared by the install modal and the closing install section.
 // Keep in step with https://docs.crona.work/install/.
 
-export interface PackageManager {
-  id: "brew" | "scoop";
+export interface InstallMethod {
+  id: InstallMethodId;
   label: string;
+  /** Where the method works, shown under the tabs. */
+  platforms: string;
+  /** Lead-in for the install step. */
+  intro: string;
   install: string[];
   update: string;
 }
 
-export const packageManagers: Record<PackageManager["id"], PackageManager> = {
-  brew: {
+export type InstallMethodId = "brew" | "scoop" | "sh" | "powershell";
+
+const scriptBase = "https://github.com/webxsid/crona/releases/latest/download";
+
+// Each release ships install scripts pinned to its own version, so /latest/ always installs the
+// newest build. They verify checksums, unpack bundled assets and stop a running daemon first.
+export const installMethods: InstallMethod[] = [
+  {
     id: "brew",
-    label: "Homebrew",
+    label: "brew",
+    platforms: "macOS · Linux",
+    intro: "Install with Homebrew:",
     install: ["brew install webxsid/tap/crona"],
     update: "brew upgrade crona",
   },
-  scoop: {
+  {
     id: "scoop",
-    label: "Scoop",
+    label: "scoop",
+    platforms: "Windows",
+    intro: "Install with Scoop:",
     // Two commands rather than `&&`, which Windows PowerShell 5.1 rejects.
     install: ["scoop bucket add webxsid https://github.com/webxsid/scoop-bucket", "scoop install crona"],
     update: "scoop update crona",
   },
-};
+  {
+    id: "sh",
+    label: "curl",
+    platforms: "macOS · Linux, without a package manager",
+    intro: "Run the install script. It puts crona in ~/.local/bin; add that to your PATH if needed:",
+    install: [`curl -fsSL ${scriptBase}/install-crona-tui.sh | sh`],
+    update: `curl -fsSL ${scriptBase}/install-crona-tui.sh | CRONA_INSTALL_FORCE=1 sh`,
+  },
+  {
+    id: "powershell",
+    label: "powershell",
+    platforms: "Windows, without Scoop",
+    intro: "Run the install script in PowerShell. It adds crona to your PATH:",
+    install: [`irm ${scriptBase}/install-crona-tui.ps1 | iex`],
+    update: `irm ${scriptBase}/install-crona-tui.ps1 | iex`,
+  },
+];
 
 export const runCommand = "crona";
-
-export interface InstallPlatform {
-  id: "macos" | "linux" | "windows";
-  label: string;
-  manager: PackageManager["id"];
-  /** Extra route shown under the steps, for people without the package manager. */
-  alternative?: { text: string; href: string };
-}
-
-export const installPlatforms: InstallPlatform[] = [
-  { id: "macos", label: "macOS", manager: "brew" },
-  {
-    id: "linux",
-    label: "Linux",
-    manager: "brew",
-    alternative: {
-      text: "No Homebrew? Download the Linux bundle (amd64 · arm64)",
-      href: "https://github.com/webxsid/crona/releases/latest",
-    },
-  },
-  { id: "windows", label: "Windows", manager: "scoop" },
-];
 
 export const installDocsUrl = "https://docs.crona.work/install/";

@@ -1,8 +1,11 @@
 ---
-import { packageManagers, runCommand } from "../../data/install";
+import { installMethods, runCommand } from "../../data/install";
 
+// The closing terminal is small, so it keeps to the package managers; the modal has the scripts.
 const commands = Object.fromEntries(
-  Object.values(packageManagers).map((manager) => [manager.id, [...manager.install, runCommand]]),
+  installMethods
+    .filter((method) => method.id === "brew" || method.id === "scoop")
+    .map((method) => [method.id, [...method.install, runCommand]]),
 );
 ---
 
