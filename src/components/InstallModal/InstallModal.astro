@@ -1,5 +1,11 @@
 ---
+import { installDocsUrl, installPlatforms, packageManagers, runCommand } from "../../data/install";
 
+interface Props {
+  latestVersion?: string;
+}
+
+const { latestVersion } = Astro.props;
 ---
 
 <div class="install-modal" data-install-modal hidden>
@@ -22,88 +28,97 @@
       >
     </div>
     <p class="install-modal__description" id="install-modal-description">
-      Get the latest stable release of Crona for your platform.
+      {
+        latestVersion ? (
+          <>
+            Installs the latest stable release, <span class="install-modal__version">{latestVersion}</span>.
+          </>
+        ) : (
+          "Installs the latest stable release for your platform."
+        )
+      }
     </p>
     <div class="install-modal__tabs" role="tablist" aria-label="Installation platform">
-      <button
-        type="button"
-        role="tab"
-        aria-selected="true"
-        aria-controls="install-panel-macos"
-        id="install-tab-macos"
-        data-install-platform="macos">macOS</button
-      >
-      <button
-        type="button"
-        role="tab"
-        aria-selected="false"
-        aria-controls="install-panel-linux"
-        id="install-tab-linux"
-        data-install-platform="linux">Linux</button
-      >
-      <button
-        type="button"
-        role="tab"
-        aria-selected="false"
-        aria-controls="install-panel-windows"
-        id="install-tab-windows"
-        data-install-platform="windows">Windows</button
-      >
+      {
+        installPlatforms.map((platform, index) => (
+          <button
+            type="button"
+            role="tab"
+            aria-selected={index === 0 ? "true" : "false"}
+            aria-controls={`install-panel-${platform.id}`}
+            id={`install-tab-${platform.id}`}
+            data-install-platform={platform.id}
+          >
+            {platform.label}
+          </button>
+        ))
+      }
     </div>
     <div class="install-modal__panels">
-      <div
-        class="install-modal__panel"
-        role="tabpanel"
-        id="install-panel-macos"
-        aria-labelledby="install-tab-macos"
-        data-install-panel="macos"
-      >
-        <p>Install with Homebrew:</p>
-        <div class="install-modal__command">
-          <code>brew install webxsid/tap/crona</code><button type="button" data-install-copy
-            >[ copy ]</button
-          >
-        </div>
-        <div class="install-modal__note">Includes: crona · crona-tui · crona-daemon</div>
-        <a class="install-modal__companion" href="/mac/"
-          >Want quick access from the menu bar? Get the companion<span aria-hidden="true">→</span
-          ></a
-        >
-      </div>
-      <div
-        class="install-modal__panel"
-        role="tabpanel"
-        id="install-panel-linux"
-        aria-labelledby="install-tab-linux"
-        data-install-panel="linux"
-        hidden
-      >
-        <p>Install with Homebrew:</p>
-        <div class="install-modal__command">
-          <code>brew install webxsid/tap/crona</code><button type="button" data-install-copy
-            >[ copy ]</button
-          >
-        </div>
-        <div class="install-modal__note">Includes: crona · crona-tui · crona-daemon</div>
-      </div>
-      <div
-        class="install-modal__panel"
-        role="tabpanel"
-        id="install-panel-windows"
-        aria-labelledby="install-tab-windows"
-        data-install-panel="windows"
-        hidden
-      >
-        <p>Install with Scoop:</p>
-        <div class="install-modal__command">
-          <code
-            >scoop bucket add webxsid https://github.com/webxsid/scoop-bucket &amp;&amp; scoop
-            install crona</code
-          >
-          <button type="button" data-install-copy>[ copy ]</button>
-        </div>
-        <div class="install-modal__note">Includes: crona · crona-tui · crona-daemon</div>
-      </div>
+      {
+        installPlatforms.map((platform, index) => {
+          const manager = packageManagers[platform.manager];
+          return (
+            <div
+              class="install-modal__panel"
+              role="tabpanel"
+              id={`install-panel-${platform.id}`}
+              aria-labelledby={`install-tab-${platform.id}`}
+              data-install-panel={platform.id}
+              hidden={index !== 0}
+            >
+              <ol class="install-modal__steps">
+                <li>
+                  <p>Install with {manager.label}:</p>
+                  <div class="install-modal__command">
+                    <div class="install-modal__command-line">
+                      {manager.install.map((line) => (
+                        <code>{line}</code>
+                      ))}
+                    </div>
+                    <button type="button" data-install-copy>
+                      [ copy ]
+                    </button>
+                  </div>
+                </li>
+                <li>
+                  <p>Start it. The daemon starts on its own the first time.</p>
+                  <div class="install-modal__command">
+                    <div class="install-modal__command-line">
+                      <code>{runCommand}</code>
+                    </div>
+                    <button type="button" data-install-copy>
+                      [ copy ]
+                    </button>
+                  </div>
+                </li>
+              </ol>
+              <div class="install-modal__note">
+                <p>Includes: crona · crona-tui · crona-daemon</p>
+                <p>
+                  Update later with <code>{manager.update}</code>
+                </p>
+              </div>
+              {platform.alternative && (
+                <a class="install-modal__companion" href={platform.alternative.href} rel="noreferrer">
+                  {platform.alternative.text}
+                  <span aria-hidden="true">→</span>
+                </a>
+              )}
+              {platform.id === "macos" && (
+                <a class="install-modal__companion" href="/mac/">
+                  Want quick access from the menu bar? Get the companion
+                  <span aria-hidden="true">→</span>
+                </a>
+              )}
+            </div>
+          );
+        })
+      }
+    </div>
+    <div class="install-modal__footer">
+      <a href={installDocsUrl} rel="noreferrer">Other ways to install<span aria-hidden="true">→</span></a>
+      <span class="install-modal__status" role="status" aria-live="polite" data-install-status></span>
     </div>
   </section>
 </div>
@@ -118,14 +133,15 @@
     const tabs = [...modal.querySelectorAll<HTMLButtonElement>("[data-install-platform]")];
     const panels = [...modal.querySelectorAll<HTMLElement>("[data-install-panel]")];
     const copyButtons = [...modal.querySelectorAll<HTMLButtonElement>("[data-install-copy]")];
+    const status = modal.querySelector<HTMLElement>("[data-install-status]");
     const installLinks = [...document.querySelectorAll<HTMLAnchorElement>('a[href="/#install"]')];
-    const validPlatforms = new Set(["macos", "linux", "windows", "go"]);
+    const validPlatforms = new Set(tabs.map((tab) => tab.dataset.installPlatform ?? ""));
     let returnFocus: HTMLElement | undefined = openButtons[0] as HTMLElement | undefined;
 
     const detectedPlatform = () => {
       const userAgent = navigator.userAgent.toLowerCase();
       if (userAgent.includes("windows")) return "windows";
-      if (userAgent.includes("linux")) return "linux";
+      if (userAgent.includes("linux") && !userAgent.includes("android")) return "linux";
       return "macos";
     };
 
@@ -134,34 +150,74 @@
       return validPlatforms.has(value) ? value : detectedPlatform();
     };
 
-    const setPlatform = (platform: string | undefined) => {
-      const next = platform && validPlatforms.has(platform) ? platform : detectedPlatform();
+    const setPlatform = (platform: string) => {
       tabs.forEach((tab) => {
-        const active = tab.dataset.installPlatform === next;
+        const active = tab.dataset.installPlatform === platform;
         tab.setAttribute("aria-selected", String(active));
         tab.tabIndex = active ? 0 : -1;
       });
       panels.forEach((panel) => {
-        panel.hidden = panel.dataset.installPanel !== next;
+        panel.hidden = panel.dataset.installPanel !== platform;
       });
     };
 
+    const announce = (message: string) => {
+      if (status) status.textContent = message;
+    };
+
     const openModal = (platform = platformFromHash(), shouldUpdateHash = true) => {
-      returnFocus =
-        document.activeElement instanceof HTMLElement ? document.activeElement : openButtons[0];
-      setPlatform(platform);
-      modal.hidden = false;
-      document.body.classList.add("has-install-modal");
-      if (dialog instanceof HTMLElement) dialog.focus();
-      if (shouldUpdateHash) window.history.replaceState(null, "", `#install-${platform}`);
+      const next = validPlatforms.has(platform) ? platform : detectedPlatform();
+      if (modal.hidden)
+        returnFocus =
+          document.activeElement instanceof HTMLElement ? document.activeElement : openButtons[0];
+      setPlatform(next);
+      if (modal.hidden) {
+        modal.hidden = false;
+        document.body.classList.add("has-install-modal");
+        dialog?.focus();
+      }
+      if (shouldUpdateHash) window.history.replaceState(null, "", `#install-${next}`);
     };
 
     const closeModal = (shouldClearHash = true) => {
       modal.hidden = true;
       document.body.classList.remove("has-install-modal");
+      announce("");
       returnFocus?.focus();
       if (shouldClearHash && window.location.hash.startsWith("#install"))
         window.history.replaceState(null, "", window.location.pathname + window.location.search);
+    };
+
+    // Keep Tab inside the dialog while it is open.
+    const focusable = () =>
+      [
+        ...(dialog?.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])',
+        ) ?? []),
+      ].filter((element) => element.offsetParent !== null && element.tabIndex >= 0);
+
+    const trapFocus = (event: KeyboardEvent) => {
+      const items = focusable();
+      if (!items.length) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      const active = document.activeElement;
+      if (event.shiftKey && (active === first || active === dialog)) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && (active === last || !dialog?.contains(active))) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    // Clipboard can be missing (http, older browsers); select the text so it can be copied by hand.
+    const selectText = (element: Element) => {
+      const range = document.createRange();
+      range.selectNodeContents(element);
+      const selection = window.getSelection();
+      selection?.removeAllRanges();
+      selection?.addRange(range);
     };
 
     openButtons.forEach((button) => button.addEventListener("click", () => openModal()));
@@ -188,27 +244,36 @@
     });
     copyButtons.forEach((button) => {
       button.addEventListener("click", async () => {
-        const command =
-          button.closest(".install-modal__command")?.querySelector("code")?.textContent?.trim() ??
-          "";
-        if (!command || !navigator.clipboard) return;
+        const lines = button.closest(".install-modal__command")?.querySelector(".install-modal__command-line");
+        if (!lines) return;
+        const command = [...lines.querySelectorAll("code")]
+          .map((code) => code.textContent?.trim() ?? "")
+          .join("\n");
         try {
+          if (!navigator.clipboard) throw new Error("Clipboard unavailable");
           await navigator.clipboard.writeText(command);
           button.textContent = "[ copied ]";
+          announce("Copied to clipboard.");
           window.setTimeout(() => {
             button.textContent = "[ copy ]";
           }, 1600);
         } catch {
-          button.textContent = "[ copy ]";
+          selectText(lines);
+          announce("Couldn't copy automatically. The command is selected; press ⌘C or Ctrl+C.");
         }
       });
     });
     document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape" && !modal.hidden) closeModal();
+      if (!modal.hidden) {
+        if (event.key === "Escape") closeModal();
+        if (event.key === "Tab") trapFocus(event);
+        return;
+      }
       if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
       if (
         event.target instanceof HTMLElement &&
-        ["INPUT", "TEXTAREA", "SELECT"].includes(event.target.tagName)
+        (["INPUT", "TEXTAREA", "SELECT"].includes(event.target.tagName) ||
+          event.target.isContentEditable)
       )
         return;
       if (event.key.toLowerCase() === "i") {

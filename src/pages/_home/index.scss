@@ -1363,9 +1363,77 @@ body.has-lotr-overlay {
   outline: none;
 }
 
+.install-modal__version {
+  color: var(--color-accent-strong);
+  font-family: var(--font-mono);
+}
+
+.install-modal__steps {
+  counter-reset: install-step;
+  display: grid;
+  gap: 18px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.install-modal__steps li {
+  counter-increment: install-step;
+  padding-left: 30px;
+  position: relative;
+}
+
+.install-modal__steps li::before {
+  border: 1px solid var(--color-line-strong);
+  color: var(--color-accent-strong);
+  content: counter(install-step);
+  font: 0.7rem/18px var(--font-mono);
+  height: 20px;
+  left: 0;
+  position: absolute;
+  text-align: center;
+  top: 2px;
+  width: 20px;
+}
+
+.install-modal__note code {
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+}
+
+.install-modal__footer {
+  align-items: center;
+  border-top: 1px solid var(--color-line);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  justify-content: space-between;
+  margin-top: 26px;
+  padding-top: 16px;
+}
+
+.install-modal__footer a {
+  color: var(--color-muted);
+  font: 0.78rem var(--font-mono);
+}
+
+.install-modal__footer a:hover,
+.install-modal__footer a:focus-visible {
+  color: var(--color-accent);
+}
+
+.install-modal__footer a span {
+  margin-left: 6px;
+}
+
+.install-modal__status {
+  color: var(--color-muted);
+  font: 0.74rem var(--font-mono);
+}
+
 .install-modal__companion {
   color: var(--color-accent);
-  display: inline-block;
+  display: table;
   font: 0.82rem var(--font-mono);
   margin-top: 22px;
   padding-bottom: 4px;
