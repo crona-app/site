@@ -12,7 +12,7 @@ export interface InstallMethod {
   update: string;
 }
 
-export type InstallMethodId = "brew" | "scoop" | "sh" | "powershell";
+export type InstallMethodId = "brew" | "scoop" | "nix" | "sh" | "powershell";
 
 const scriptBase = "https://github.com/webxsid/crona/releases/latest/download";
 
@@ -35,6 +35,14 @@ export const installMethods: InstallMethod[] = [
     // Two commands rather than `&&`, which Windows PowerShell 5.1 rejects.
     install: ["scoop bucket add webxsid https://github.com/webxsid/scoop-bucket", "scoop install crona"],
     update: "scoop update crona",
+  },
+  {
+    id: "nix",
+    label: "nix",
+    platforms: "Linux · Apple silicon Macs",
+    intro: "Install from the crona flake:",
+    install: ["nix profile install github:webxsid/crona#crona"],
+    update: "nix profile upgrade crona",
   },
   {
     id: "sh",
