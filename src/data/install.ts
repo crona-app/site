@@ -40,8 +40,9 @@ export const installMethods: InstallMethod[] = [
     id: "nix",
     label: "nix",
     platforms: "Linux · Apple silicon Macs",
-    intro: "Install from the crona flake:",
-    install: ["nix profile install github:webxsid/crona#crona"],
+    intro:
+      "Install from the crona flake. Needs flakes enabled (experimental-features = nix-command flakes); on older Nix, use profile install:",
+    install: ["nix profile add github:webxsid/crona#crona"],
     update: "nix profile upgrade crona",
   },
   {
