@@ -1,122 +1,18 @@
 ---
-
+import RuntimeArchitecture from "../RuntimeArchitecture/RuntimeArchitecture.astro";
 ---
 
-<section class="mac-runtime" aria-labelledby="runtime-title">
+<!-- is-visible starts the sync pulse; this page has no scroll reveal. -->
+<section class="mac-runtime is-visible" aria-labelledby="runtime-title">
   <div class="mac-runtime__intro">
     <h2 id="runtime-title">The Mac app is a window into the same record.</h2>
     <p>
       Crona for macOS connects to the local daemon alongside the CLI and TUI, so issues, sessions,
       check-ins, and day boundaries stay shared.
     </p>
+    <a class="mac-text-link" href="https://docs.crona.work/workflows/macos-companion/"
+      >Read the Mac app architecture <span aria-hidden="true">↗</span></a
+    >
   </div>
-  <div class="mac-runtime__topology" aria-label="Crona shared local runtime">
-    <div class="mac-runtime__topology-map" data-runtime-map>
-      <svg class="mac-runtime__connectors" viewBox="0 0 1 1" aria-hidden="true">
-        <defs>
-          <marker
-            id="mac-runtime-arrow"
-            markerWidth="8"
-            markerHeight="8"
-            refX="6"
-            refY="4"
-            orient="auto"
-            markerUnits="userSpaceOnUse"
-          >
-            <path d="M0,0 L8,4 L0,8 z"></path>
-          </marker>
-        </defs>
-        <path data-runtime-path="mac"></path>
-        <path data-runtime-path="core"></path>
-        <path data-runtime-path="storage"></path>
-      </svg>
-      <div class="mac-runtime__clients">
-        <div class="mac-runtime__node mac-runtime__node--client" data-runtime-node="mac">
-          <strong>Crona for macOS</strong><span>menu bar</span>
-        </div>
-        <div class="mac-runtime__node mac-runtime__node--client" data-runtime-node="core">
-          <strong>Crona core</strong><span>CLI + TUI</span>
-        </div>
-      </div>
-      <div class="mac-runtime__node mac-runtime__node--daemon" data-runtime-node="daemon">
-        <strong>crona-daemon</strong><span>local socket · source of truth</span>
-      </div>
-      <div class="mac-runtime__node mac-runtime__node--storage" data-runtime-node="storage">
-        <strong>SQLite</strong><span>one local work record</span>
-      </div>
-    </div>
-    <div class="mac-runtime__topology-footer">
-      <span>local daemon · no second workspace</span><a
-        class="mac-text-link"
-        href="https://docs.crona.work/workflows/macos-companion/"
-        >Read the Mac app architecture <span aria-hidden="true">↗</span></a
-      >
-    </div>
-  </div>
+  <RuntimeArchitecture highlight="mac" />
 </section>
-
-<script>
-  const runtimeMap = document.querySelector<HTMLElement>("[data-runtime-map]");
-  const runtimeSvg = runtimeMap?.querySelector<SVGSVGElement>(".mac-runtime__connectors");
-
-  if (runtimeMap && runtimeSvg) {
-    const nodes = new Map(
-      ["mac", "core", "daemon", "storage"].map((name) => [
-        name,
-        runtimeMap.querySelector<HTMLElement>(`[data-runtime-node="${name}"]`),
-      ]),
-    );
-    const paths = new Map(
-      ["mac", "core", "storage"].map((name) => [
-        name,
-        runtimeSvg.querySelector<SVGPathElement>(`[data-runtime-path="${name}"]`),
-      ]),
-    );
-    let frame = 0;
-
-    const pointFor = (name: string, mapRect: DOMRect) => {
-      const node = nodes.get(name);
-      if (!node) return null;
-      const rect = node.getBoundingClientRect();
-      return {
-        top: rect.top - mapRect.top,
-        bottom: rect.bottom - mapRect.top,
-        center: rect.left - mapRect.left + rect.width / 2,
-      };
-    };
-
-    const updateConnectors = () => {
-      frame = 0;
-      const mapRect = runtimeMap.getBoundingClientRect();
-      if (!mapRect.width || !mapRect.height) return;
-      runtimeSvg.setAttribute("viewBox", `0 0 ${mapRect.width} ${mapRect.height}`);
-
-      const mac = pointFor("mac", mapRect);
-      const core = pointFor("core", mapRect);
-      const daemon = pointFor("daemon", mapRect);
-      const storage = pointFor("storage", mapRect);
-      if (!mac || !core || !daemon || !storage) return;
-
-      const route = (source: typeof mac, target: typeof daemon) => {
-        const bendY = source.bottom + (target.top - source.bottom) / 2;
-        return `M ${source.center} ${source.bottom} V ${bendY} H ${target.center} V ${target.top}`;
-      };
-
-      paths.get("mac")?.setAttribute("d", route(mac, daemon));
-      paths.get("core")?.setAttribute("d", route(core, daemon));
-      paths
-        .get("storage")
-        ?.setAttribute("d", `M ${daemon.center} ${daemon.bottom} V ${storage.top}`);
-    };
-
-    const scheduleUpdate = () => {
-      if (frame) return;
-      frame = window.requestAnimationFrame(updateConnectors);
-    };
-
-    scheduleUpdate();
-    window.addEventListener("resize", scheduleUpdate);
-    if ("ResizeObserver" in window) new ResizeObserver(scheduleUpdate).observe(runtimeMap);
-    document.fonts?.ready.then(scheduleUpdate);
-  }
-</script>

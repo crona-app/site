@@ -18,9 +18,7 @@
   stroke-width: 1;
 }
 
-.mac-popover-demo__toolbar text,
-.mac-popover-demo__date text,
-.mac-popover-demo__empty-state text {
+.mac-popover-demo__toolbar text {
   fill: #f0f1f3;
   font-family: var(--font-sans);
   font-weight: 650;
@@ -66,43 +64,147 @@
   width: 17px;
 }
 
-.mac-popover-demo__date circle,
+.mac-popover-demo__date rect,
+.mac-popover-demo__sections > rect:first-child {
+  fill: rgba(64, 66, 72, .72);
+  stroke: rgba(110, 113, 122, .5);
+}
+
 .mac-popover-demo__date path {
   fill: none;
-  stroke: #f2c900;
+  stroke: #c3c5c9;
   stroke-linecap: round;
-  stroke-width: 1.25;
+  stroke-linejoin: round;
+  stroke-width: 1.6;
 }
 
-.mac-popover-demo__date text {
-  font-size: 16px;
+.mac-popover-demo__date path.is-disabled {
+  stroke: #5d6066;
 }
 
-.mac-popover-demo__empty-state rect {
+.mac-popover-demo__date text,
+.mac-popover-demo__sections text,
+.mac-popover-demo__timer text,
+.mac-popover-demo__issues text,
+.mac-popover-demo__footer text {
+  fill: #f0f1f3;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.mac-popover-demo__sections .is-active {
+  fill: url("#mac-popover-tab");
+  stroke: rgba(151, 153, 164, .34);
+}
+
+.mac-popover-demo__sections .is-muted,
+.mac-popover-demo__footer .is-muted {
+  fill: #a3a5aa;
+  font-weight: 500;
+}
+
+.mac-popover-demo__timer > rect:first-child {
+  fill: rgba(130, 174, 244, .1);
+  stroke: rgba(130, 174, 244, .55);
+}
+
+.mac-popover-demo__timer circle {
+  fill: #9bd7ae;
+}
+
+.mac-popover-demo__timer .mac-popover-demo__timer-label {
+  fill: #9bd7ae;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.mac-popover-demo__timer .mac-popover-demo__timer-title {
+  font-size: 14px;
+}
+
+.mac-popover-demo__timer .mac-popover-demo__timer-clock {
+  font-size: 26px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  letter-spacing: -0.04em;
+}
+
+.mac-popover-demo__timer-track {
+  fill: #45484d;
+}
+
+.mac-popover-demo__timer-fill {
+  fill: #82aef4;
+}
+
+.mac-popover-demo__issue rect:first-child {
   fill: #303337;
   stroke: #45484d;
 }
 
-.mac-popover-demo__empty-state circle {
-  fill: none;
-  stroke: #aeb1b5;
-  stroke-width: 2;
+.mac-popover-demo__issue.is-active rect:first-child {
+  stroke: rgba(130, 174, 244, .55);
 }
 
-.mac-popover-demo__empty-state path {
+.mac-popover-demo__issues .mac-popover-demo__issue-title {
+  font-size: 13px;
+}
+
+.mac-popover-demo__issues .mac-popover-demo__issue-meta {
+  fill: #a3a5aa;
+  font-size: 10.5px;
+  font-weight: 500;
+}
+
+.mac-popover-demo__badge text {
+  font-size: 10px !important;
+  font-weight: 650 !important;
+}
+
+.mac-popover-demo__badge.is-carried rect {
+  fill: rgba(198, 168, 245, .16);
+  stroke: rgba(198, 168, 245, .55);
+}
+
+.mac-popover-demo__badge.is-carried text {
+  fill: #d4bdfa;
+}
+
+.mac-popover-demo__badge.is-stalled rect {
+  fill: rgba(240, 163, 90, .14);
+  stroke: rgba(240, 163, 90, .55);
+}
+
+.mac-popover-demo__badge.is-stalled text {
+  fill: #f5b678;
+}
+
+.mac-popover-demo__badge.is-risk rect {
+  fill: rgba(255, 122, 122, .14);
+  stroke: rgba(255, 122, 122, .6);
+}
+
+.mac-popover-demo__badge.is-risk text {
+  fill: #ff9a9a;
+}
+
+.mac-popover-demo__footer rect {
+  fill: #4a4c52;
+}
+
+.mac-popover-demo__footer path {
   fill: none;
-  stroke: #aeb1b5;
+  stroke: #c3c5c9;
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-width: 2;
+  stroke-width: 1.6;
 }
 
-.mac-popover-demo__empty-title {
-  font-size: 16px;
+.mac-popover-demo__footer path:first-of-type {
+  fill: #c3c5c9;
 }
 
-.mac-popover-demo__empty-copy {
-  fill: #a3a5aa !important;
-  font-size: 12px;
-  font-weight: 500 !important;
+.mac-popover-demo__sections text {
+  font-size: 11px;
 }

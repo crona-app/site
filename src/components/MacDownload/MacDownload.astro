@@ -1,4 +1,5 @@
 ---
+import { installMethods } from "../../data/install";
 import type { MacRelease } from "../../lib/mac-releases";
 
 interface Props {
@@ -10,6 +11,8 @@ interface Props {
 const { stable, beta, releasesUrl } = Astro.props as Props;
 const stableUrl = stable.downloadUrl ?? stable.releaseUrl;
 const stableLabel = stable.downloadUrl ? `Download ${stable.version}` : `View ${stable.version}`;
+const brewInstall = installMethods.find((method) => method.id === "brew")?.install[0];
+const dmgName = stable.downloadUrl?.split("/").pop();
 ---
 
 <section class="mac-download" id="download" aria-labelledby="download-title">
@@ -21,11 +24,21 @@ const stableLabel = stable.downloadUrl ? `Download ${stable.version}` : `View ${
         <span>01 / Crona</span>
         <strong>Install Crona</strong>
         <p>This sets up the local daemon shared by the TUI, CLI, and Mac app.</p>
+        <div class="mac-download__command">
+          <code>{brewInstall}</code>
+          <button type="button" data-mac-copy={brewInstall}>Copy</button>
+        </div>
+        <p>
+          No Homebrew? <a href="/#install-sh">See the other install options</a>.
+        </p>
       </li>
       <li>
         <span>02 / Mac app</span>
         <strong>Install the Mac App</strong>
-        <p>Download the DMG, move Crona to Applications, and launch it.</p>
+        <p>
+          Download {dmgName ? <code>{dmgName}</code> : "the DMG"}, move Crona to Applications, and
+          launch it.
+        </p>
       </li>
     </ol>
     <a
@@ -54,3 +67,20 @@ const stableLabel = stable.downloadUrl ? `Download ${stable.version}` : `View ${
     >
   </div>
 </section>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>("[data-mac-copy]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(button.dataset.macCopy ?? "");
+        button.textContent = "Copied";
+      } catch {
+        // No clipboard (http, older browsers): select the command so it can be copied by hand.
+        const code = button.previousElementSibling;
+        if (code) window.getSelection()?.selectAllChildren(code);
+        button.textContent = "Press ⌘C";
+      }
+      window.setTimeout(() => (button.textContent = "Copy"), 1600);
+    });
+  });
+</script>

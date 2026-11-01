@@ -2,6 +2,13 @@
 import { CloudOff, Cpu, Database, PanelTop, SquareTerminal, Terminal } from "@lucide/astro";
 import "./RuntimeArchitecture.scss";
 
+interface Props {
+  /** Client to emphasise, e.g. the Mac app on its own page. */
+  highlight?: "tui" | "cli" | "mac";
+}
+
+const { highlight } = Astro.props;
+
 const clients = [
   { id: "tui", name: "crona-tui", role: "terminal", Icon: SquareTerminal },
   { id: "cli", name: "crona", role: "cli", Icon: Terminal },
@@ -16,7 +23,13 @@ const clients = [
     <div class="runtime-arch__clients">
       {
         clients.map(({ id, name, role, Icon }) => (
-          <div class:list={["runtime-arch__node", `runtime-arch__node--${id}`]}>
+          <div
+            class:list={[
+              "runtime-arch__node",
+              `runtime-arch__node--${id}`,
+              id === highlight && "runtime-arch__node--highlight",
+            ]}
+          >
             <Icon class="runtime-arch__icon" size={16} aria-hidden="true" />
             <strong>{name}</strong>
             <span>{role}</span>

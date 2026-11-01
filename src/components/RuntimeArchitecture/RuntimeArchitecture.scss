@@ -72,6 +72,15 @@ $caret: 4px;
   min-width: min(240px, 72%);
 }
 
+.runtime-arch__node--highlight {
+  border-color: var(--color-accent);
+}
+
+.runtime-arch__node--highlight strong,
+.runtime-arch__node--highlight .runtime-arch__icon {
+  color: var(--color-accent-strong);
+}
+
 .runtime-arch__node--storage {
   min-width: min(180px, 56%);
 }

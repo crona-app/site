@@ -1,71 +1,165 @@
 ---
-import { demoToday } from "../../data/crona-demo";
+// Mock of the menu bar popup's Issues tab as of 1.1: a shared day, Planned/Overdue/Upcoming,
+// a running focus timer, and the carry-over, stall and high-risk markers from the core.
 import { Settings } from "@lucide/astro";
 import "./MacPopoverDemo.scss";
 
 const dateLabel = new Intl.DateTimeFormat("en-GB", {
   day: "2-digit",
   month: "short",
-  year: "numeric",
   timeZone: "UTC",
-}).format(new Date(`${demoToday}T12:00:00Z`));
+}).format(new Date());
+
+type Badge = { label: string; tone: "carried" | "stalled" | "risk" };
+const issues: { title: string; meta: string; tags: string[]; badge?: Badge }[] = [
+  {
+    title: "Draft carry-over release notes",
+    meta: "Personal › seed-qa · 35m / 45m",
+    tags: ["docs", "release"],
+    badge: { label: "Carried ×1", tone: "carried" },
+  },
+  {
+    title: "Migrate settings storage",
+    meta: "Personal › seed-qa · 2h30m / 1h",
+    tags: ["tech-debt"],
+    badge: { label: "Stalled", tone: "stalled" },
+  },
+  {
+    title: "Rest-aware context seed",
+    meta: "Personal › seed-qa · 1h30m / 2h",
+    tags: ["client", "urgent"],
+    badge: { label: "High risk", tone: "risk" },
+  },
+  {
+    title: "Publish example config bundle",
+    meta: "OSS › cli · 0m / 25m",
+    tags: ["docs"],
+  },
+];
+const tagColors: Record<string, string> = {
+  docs: "#82aef4",
+  release: "#9bd7ae",
+  "tech-debt": "#f0a35a",
+  client: "#c6a8f5",
+  urgent: "#ff7a7a",
+};
+const rowTop = 222;
+const rowHeight = 48;
 ---
 
 <svg
   class="mac-popover-demo"
-  viewBox="0 0 451 318"
+  viewBox="0 0 451 472"
   role="img"
   aria-labelledby="mac-popover-title mac-popover-description"
 >
   <title id="mac-popover-title">Crona menu bar popup</title>
-  <desc id="mac-popover-description">The Crona Mac app showing its Issues tab and an empty daily focus state.</desc>
+  <desc id="mac-popover-description">
+    The Crona Mac app's Issues tab with a focus timer running and today's planned issues, one
+    carried over, one stalled and one marked high risk.
+  </desc>
   <defs>
     <linearGradient id="mac-popover-shell" x1="0" x2="0" y1="0" y2="1">
-      <stop offset="0" stop-color="#303238" />
-      <stop offset="1" stop-color="#292b2f" />
+      <stop offset="0" stop-color="#303238"></stop>
+      <stop offset="1" stop-color="#292b2f"></stop>
     </linearGradient>
     <linearGradient id="mac-popover-tab" x1="0" x2="0" y1="0" y2="1">
-      <stop offset="0" stop-color="#4a4c53" />
-      <stop offset="1" stop-color="#3b3d43" />
+      <stop offset="0" stop-color="#4a4c53"></stop>
+      <stop offset="1" stop-color="#3b3d43"></stop>
     </linearGradient>
     <filter id="mac-popover-shadow" x="-20%" y="-20%" width="140%" height="150%">
-      <feDropShadow dx="0" dy="12" flood-color="#000" flood-opacity=".48" stdDeviation="10" />
+      <feDropShadow dx="0" dy="12" flood-color="#000" flood-opacity=".48" stdDeviation="10"
+      ></feDropShadow>
     </filter>
   </defs>
 
   <g class="mac-popover-demo__shell" filter="url(#mac-popover-shadow)">
-    <rect x="20.5" y="9.5" width="428" height="297" rx="27" />
-    <rect class="mac-popover-demo__inner-border" x="21.5" y="10.5" width="426" height="295" rx="26" />
+    <rect x="20.5" y="9.5" width="428" height="451" rx="27"></rect>
+    <rect class="mac-popover-demo__inner-border" x="21.5" y="10.5" width="426" height="449" rx="26"
+    ></rect>
   </g>
 
   <g class="mac-popover-demo__toolbar">
-    <circle class="mac-popover-demo__round-button" cx="55" cy="48" r="15" />
-    <path d="M50 48h10M55 43v10" />
+    <circle class="mac-popover-demo__round-button" cx="55" cy="48" r="15"></circle>
+    <path d="M50 48h10M55 43v10"></path>
 
-    <rect class="mac-popover-demo__tabs" x="80" y="29" width="300" height="38" rx="19" />
-    <rect class="mac-popover-demo__active-tab" x="83" y="32" width="76" height="32" rx="16" />
+    <rect class="mac-popover-demo__tabs" x="80" y="29" width="300" height="38" rx="19"></rect>
+    <rect class="mac-popover-demo__active-tab" x="83" y="32" width="76" height="32" rx="16"></rect>
     <text x="121" y="53" text-anchor="middle">Issues</text>
     <text class="is-muted" x="186" y="53" text-anchor="middle">Habits</text>
     <text class="is-muted" x="267" y="53" text-anchor="middle">Wellbeing</text>
     <text class="is-muted" x="348" y="53" text-anchor="middle">Stats</text>
 
-    <circle class="mac-popover-demo__round-button" cx="404" cy="48" r="15" />
+    <circle class="mac-popover-demo__round-button" cx="404" cy="48" r="15"></circle>
     <g class="mac-popover-demo__settings" transform="translate(395.5 39.5)">
       <Settings size={17} stroke-width={1.8} aria-hidden="true" />
     </g>
   </g>
 
+  <!-- Day pill: moves every tab together and stops at today. -->
   <g class="mac-popover-demo__date">
-    <circle cx="58" cy="96" r="5" />
-    <path d="M58 87v18M49 96h18" />
-    <text x="80" y="102">{dateLabel}</text>
+    <rect x="34" y="80" width="150" height="30" rx="15"></rect>
+    <path d="M52 89l-5 6 5 6"></path>
+    <text x="109" y="100" text-anchor="middle">Today · {dateLabel}</text>
+    <path class="is-disabled" d="M166 89l5 6-5 6"></path>
   </g>
 
-  <g class="mac-popover-demo__empty-state">
-    <rect x="34" y="121" width="392" height="172" rx="17" />
-    <circle cx="230" cy="181" r="10" />
-    <path d="m225 181 4 4 7-9" />
-    <text class="mac-popover-demo__empty-title" x="230" y="219" text-anchor="middle">Today is clear</text>
-    <text class="mac-popover-demo__empty-copy" x="230" y="244" text-anchor="middle">No planned focus issues for today.</text>
+  <g class="mac-popover-demo__sections">
+    <rect x="200" y="80" width="226" height="30" rx="15"></rect>
+    <rect class="is-active" x="202" y="82" width="74" height="26" rx="13"></rect>
+    <text x="239" y="99" text-anchor="middle">Planned</text>
+    <text class="is-muted" x="311" y="99" text-anchor="middle">Overdue 2</text>
+    <text class="is-muted" x="387" y="99" text-anchor="middle">Upcoming 3</text>
+  </g>
+
+  <!-- Running focus session pinned above the list. -->
+  <g class="mac-popover-demo__timer">
+    <rect x="34" y="124" width="392" height="80" rx="16"></rect>
+    <circle cx="54" cy="147" r="4"></circle>
+    <text class="mac-popover-demo__timer-label" x="66" y="151">Focus · Pomodoro 1 of 4</text>
+    <text class="mac-popover-demo__timer-title" x="50" y="176">Draft carry-over release notes</text>
+    <text class="mac-popover-demo__timer-clock" x="410" y="171" text-anchor="end">18:42</text>
+    <rect class="mac-popover-demo__timer-track" x="50" y="188" width="360" height="4" rx="2"></rect>
+    <rect class="mac-popover-demo__timer-fill" x="50" y="188" width="135" height="4" rx="2"></rect>
+  </g>
+
+  <g class="mac-popover-demo__issues">
+    {
+      issues.map((issue, index) => {
+        const y = rowTop + index * rowHeight;
+        const badgeWidth = issue.badge ? issue.badge.label.length * 6.4 + 18 : 0;
+        return (
+          <g class:list={["mac-popover-demo__issue", index === 0 && "is-active"]}>
+            <rect x="34" y={y} width="392" height={rowHeight - 6} rx="12" />
+            <text class="mac-popover-demo__issue-title" x="50" y={y + 18}>
+              {issue.title}
+            </text>
+            {issue.tags.map((tag, tagIndex) => (
+              <circle cx={50 + tagIndex * 9 + 3} cy={y + 30} r="3" fill={tagColors[tag]} />
+            ))}
+            <text class="mac-popover-demo__issue-meta" x={50 + issue.tags.length * 9 + 4} y={y + 34}>
+              {issue.meta}
+            </text>
+            {issue.badge && (
+              <g class:list={["mac-popover-demo__badge", `is-${issue.badge.tone}`]}>
+                <rect x={412 - badgeWidth} y={y + 11} width={badgeWidth} height="20" rx="10" />
+                <text x={412 - badgeWidth / 2} y={y + 25} text-anchor="middle">
+                  {issue.badge.label}
+                </text>
+              </g>
+            )}
+          </g>
+        );
+      })
+    }
+  </g>
+
+  <g class="mac-popover-demo__footer">
+    <rect x="34" y="418" width="128" height="28" rx="14"></rect>
+    <path d="M50 427l8 5-8 5z"></path>
+    <text x="68" y="436">Start Ad Hoc</text>
+    <rect x="170" y="418" width="28" height="28" rx="14"></rect>
+    <path d="M178 427h12M178 432h12M178 437h7"></path>
+    <text class="is-muted" x="410" y="436" text-anchor="end">6 planned · 5h30m</text>
   </g>
 </svg>

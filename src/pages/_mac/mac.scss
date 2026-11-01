@@ -14,9 +14,8 @@
   display: grid;
   gap: clamp(42px, 8vw, 120px);
   grid-template-columns: minmax(0, 0.9fr) minmax(360px, 1fr);
-  min-height: calc(100svh - 72px);
-  padding-bottom: 100px;
-  padding-top: 100px;
+  padding-bottom: clamp(64px, 9vw, 110px);
+  padding-top: clamp(56px, 8vw, 96px);
 }
 
 .mac-hero__copy {
@@ -446,6 +445,87 @@
   background: var(--mac-blue);
 }
 
+.mac-capability__preview code {
+  color: var(--mac-ink);
+  font: 0.74rem/1.5 var(--font-mono);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mac-capability__preview--capture code:first-of-type {
+  margin-top: auto;
+}
+
+.mac-capability__preview--carry strong {
+  margin-top: auto;
+}
+
+.mac-capability__preview--carry div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.mac-capability__preview--carry b {
+  border: 1px solid;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 650;
+  padding: 2px 9px;
+}
+
+.mac-capability__preview--carry .is-carried {
+  background: rgba(198, 168, 245, 0.14);
+  color: #d4bdfa;
+}
+
+.mac-capability__preview--carry .is-risk {
+  background: rgba(255, 122, 122, 0.12);
+  color: #ff9a9a;
+}
+
+.mac-capability__preview--carry small,
+.mac-capability__preview--capture small,
+.mac-capability__preview--tags small {
+  color: var(--mac-muted);
+  font-size: 0.72rem;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.mac-capability__preview--tags div {
+  display: grid;
+  gap: 4px;
+}
+
+.mac-capability__preview--tags div:first-of-type {
+  margin-top: auto;
+}
+
+.mac-capability__preview--tags i {
+  background: var(--c);
+  border-radius: 999px;
+  display: block;
+  height: 5px;
+  width: var(--w);
+}
+
+.mac-capability__copy > span em {
+  border: 1px solid var(--mac-line);
+  border-radius: 999px;
+  color: var(--mac-muted);
+  font-style: normal;
+  letter-spacing: 0.02em;
+  margin-left: 6px;
+  padding: 1px 7px;
+}
+
+.mac-capability__copy p code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+}
+
 .mac-capability__copy {
   display: grid;
   gap: 10px;
@@ -470,8 +550,10 @@
 }
 
 .mac-runtime {
+  align-items: center;
   display: grid;
   gap: 56px;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr);
   padding-bottom: 120px;
   padding-top: 120px;
 }
@@ -484,7 +566,7 @@
   max-width: 20ch;
 }
 
-.mac-runtime__intro>p:last-child {
+.mac-runtime__intro>p {
   color: var(--mac-muted);
   font-size: 1.05rem;
   line-height: 1.6;
@@ -492,116 +574,19 @@
   max-width: 60ch;
 }
 
-.mac-runtime__topology {
-  background: linear-gradient(145deg, rgba(40, 45, 51, 0.82), rgba(22, 25, 29, 0.8));
-  border: 1px solid rgba(86, 94, 103, 0.72);
-  border-radius: 26px;
-  box-shadow:
-    inset 0 1px 1px rgba(255, 255, 255, 0.05),
-    0 26px 60px rgba(0, 0, 0, 0.18);
-  display: grid;
-  gap: 0;
-  justify-items: center;
-  padding: 28px;
+// The shared diagram reads its colours from the site tokens; map them onto the Mac palette.
+.mac-runtime {
+  --color-accent: var(--mac-blue);
+  --color-accent-strong: #a9c8fa;
+  --color-page: #101214;
+  --color-ink: var(--mac-ink);
+  --color-muted: var(--mac-muted);
+  --color-line-strong: #3a4148;
 }
 
-.mac-runtime__topology-map {
-  display: grid;
-  gap: 36px;
-  grid-template-rows: auto auto auto;
-  min-height: 290px;
-  overflow: visible;
-  position: relative;
-  width: min(100%, 620px);
-}
-
-.mac-runtime__clients {
-  display: grid;
-  gap: 18px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  position: relative;
-  width: 100%;
-}
-
-.mac-runtime__node {
-  background: rgba(13, 15, 17, 0.48);
-  border: 1px solid var(--mac-line);
-  border-radius: 14px;
-  display: grid;
-  gap: 6px;
-  padding: 16px 18px;
-  position: relative;
-  text-align: center;
-  z-index: 1;
-}
-
-.mac-runtime__node strong {
-  font-size: 0.88rem;
-}
-
-.mac-runtime__node span {
-  color: var(--mac-muted);
-  font-size: 0.72rem;
-}
-
-.mac-runtime__node--daemon {
-  border-color: var(--mac-blue);
-  justify-self: center;
-  width: min(100%, 320px);
-}
-
-.mac-runtime__node--daemon strong,
-.mac-runtime__node--storage strong {
-  color: var(--mac-blue);
-}
-
-.mac-runtime__node--storage {
-  justify-self: center;
-  width: min(100%, 250px);
-}
-
-.mac-runtime__connectors {
-  fill: var(--mac-blue);
-  inset: 0;
-  overflow: visible;
-  pointer-events: none;
-  position: absolute;
-  stroke: color-mix(in srgb, var(--mac-blue) 46%, var(--mac-line));
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 1.7;
-  width: 100%;
-  z-index: 0;
-}
-
-.mac-runtime__connectors marker path {
-  fill: var(--mac-blue);
-}
-
-.mac-runtime__connectors path {
-  fill: none;
-  marker-end: url("#mac-runtime-arrow");
-}
-
-.mac-runtime__topology-footer {
-  align-items: center;
-  border-top: 1px solid var(--mac-line);
-  display: flex;
-  gap: 20px;
-  justify-content: space-between;
-  margin-top: 28px;
-  padding-top: 18px;
-  width: 100%;
-}
-
-.mac-runtime__topology-footer>span {
-  color: var(--mac-muted);
-  font-size: 0.72rem;
-}
-
-.mac-runtime__topology-footer .mac-text-link {
-  border: 0;
-  padding: 0;
+.mac-runtime__intro .mac-text-link {
+  display: inline-block;
+  margin-top: 26px;
 }
 
 .mac-download {
@@ -658,6 +643,45 @@
 
 .mac-download__steps strong {
   font-size: 0.98rem;
+}
+
+.mac-download__command {
+  align-items: center;
+  background: rgba(12, 14, 16, 0.56);
+  border: 1px solid var(--mac-line);
+  border-radius: 10px;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  margin-top: 6px;
+  padding: 10px 12px;
+}
+
+.mac-download__command code {
+  color: var(--mac-ink);
+  font: 0.8rem var(--font-mono);
+  overflow-wrap: anywhere;
+}
+
+.mac-download__command button {
+  background: transparent;
+  border: 1px solid var(--mac-line);
+  border-radius: 999px;
+  color: var(--mac-blue);
+  cursor: pointer;
+  flex: 0 0 auto;
+  font: 600 0.72rem var(--font-sans);
+  padding: 5px 11px;
+}
+
+.mac-download__command button:hover,
+.mac-download__command button:focus-visible {
+  border-color: var(--mac-blue);
+  outline: none;
+}
+
+.mac-download__steps p a {
+  color: var(--mac-blue);
 }
 
 .mac-download__steps p {
@@ -724,19 +748,6 @@
     padding-top: 80px;
   }
 
-  .mac-runtime__topology {
-    padding: 22px 16px;
-  }
-
-  .mac-runtime__topology-map {
-    gap: 28px;
-  }
-
-  .mac-runtime__topology-footer {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 12px;
-  }
 
   .mac-features {
     grid-template-columns: 1fr;
@@ -784,6 +795,18 @@
 
   .mac-hero__sub-headline {
     font-size: 0.98rem;
+  }
+
+  // Keep download as the one button; features becomes a quiet link beside it.
+  .mac-actions {
+    gap: 18px;
+  }
+
+  .mac-actions .mac-text-link {
+    border: 0;
+    color: var(--mac-muted);
+    font-size: 0.84rem;
+    padding: 0;
   }
 
 
