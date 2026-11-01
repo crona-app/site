@@ -19,7 +19,12 @@
     >
     <div class="home-lotr-overlay__light" aria-hidden="true"></div>
     <div class="home-lotr-overlay__reveal">
-      <img class="home-lotr-overlay__ring" src="/assets/easter-egg/one-ring.png" alt="" />
+      <img
+        class="home-lotr-overlay__ring"
+        data-lotr-ring="/assets/easter-egg/one-ring.png"
+        alt=""
+        decoding="async"
+      />
       <p class="home-lotr-overlay__quote" id="lotr-overlay-title">
         <span>One Ring to rule them all,</span><span>One Ring to find them,</span><span
           >One Ring to bring them all</span
@@ -41,6 +46,11 @@
   let lotrReturnFocus: HTMLElement | null = null;
   let lotrAutoCloseTimer: number | undefined;
   let lotrCloseTimer: number | undefined;
+  const lotrRing = lotrOverlay?.querySelector<HTMLImageElement>("[data-lotr-ring]");
+  // The ring only appears in the easter egg, so fetch it on intent rather than on page load.
+  const loadLotrRing = () => {
+    if (lotrRing && !lotrRing.src) lotrRing.src = lotrRing.dataset.lotrRing ?? "";
+  };
 
   if (
     lotrToggle instanceof HTMLButtonElement &&
@@ -65,6 +75,7 @@
       window.clearTimeout(lotrCloseTimer);
       lotrReturnFocus =
         document.activeElement instanceof HTMLElement ? document.activeElement : lotrToggle;
+      loadLotrRing();
       lotrOverlay.classList.remove("is-closing");
       lotrOverlay.hidden = false;
       lotrToggle.setAttribute("aria-expanded", "true");
@@ -73,6 +84,8 @@
       lotrAutoCloseTimer = window.setTimeout(closeLotrOverlay, 10000);
     };
     lotrToggle.addEventListener("click", openLotrOverlay);
+    lotrToggle.addEventListener("pointerenter", loadLotrRing, { once: true });
+    lotrToggle.addEventListener("focus", loadLotrRing, { once: true });
     lotrCloseButtons.forEach((button) => button.addEventListener("click", closeLotrOverlay));
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape" && !lotrOverlay.hidden) closeLotrOverlay();

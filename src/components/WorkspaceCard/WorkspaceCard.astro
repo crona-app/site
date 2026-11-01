@@ -2,12 +2,13 @@
 interface Props {
   description: string;
   label: string;
-  variant: "momentum" | "review" | "summary";
+  variant: string;
   /** Landing stack only: render as a button that brings this view to the front. */
   select?: number;
+  pressed?: boolean;
 }
 
-const { description, label, variant, select } = Astro.props as Props;
+const { description, label, variant, select, pressed = false } = Astro.props as Props;
 const classes = ["home-workspace-screen__card", `home-workspace-screen__card--${variant}`];
 ---
 
@@ -22,8 +23,8 @@ const classes = ["home-workspace-screen__card", `home-workspace-screen__card--${
       class:list={classes}
       type="button"
       data-workspace-select={select}
-      data-workspace-pos={["left", "center", "right"][select]}
-      aria-pressed={select === 1 ? "true" : "false"}
+      aria-pressed={pressed ? "true" : "false"}
+      style={`view-transition-name: workspace-card-${variant}`}
     >
       <span class="home-workspace-screen__key">{label}</span>
       <p>{description}</p>

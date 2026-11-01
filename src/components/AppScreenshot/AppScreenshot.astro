@@ -1,11 +1,13 @@
 ---
 import { Image } from "astro:assets";
+import habits from "../../assets/screenshots/habits.png";
 import issues from "../../assets/screenshots/issues.png";
 import momentum from "../../assets/screenshots/momentum.png";
 import review from "../../assets/screenshots/review.png";
 import summary from "../../assets/screenshots/summary.png";
 
 const screenshots = {
+  habits,
   issues,
   momentum,
   review,
@@ -38,10 +40,10 @@ const src = screenshots[name];
 <Image
   alt={alt}
   class={className}
-  densities={[1.5, 2]}
   format="webp"
   loading={loading}
   quality={quality}
   sizes={sizes}
   src={src}
+  widths={[640, 960, 1280, 1920, 2560, src.width]}
 />

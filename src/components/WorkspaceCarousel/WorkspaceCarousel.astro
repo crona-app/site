@@ -2,6 +2,7 @@
 import AppScreenshot from "../AppScreenshot/AppScreenshot.astro";
 import MeshGradient from "../MeshGradient/MeshGradient.astro";
 import WorkspaceCard from "../WorkspaceCard/WorkspaceCard.astro";
+import { workspaceViews } from "../../data/workspace-views";
 ---
 
 <div class="home-workspace-carousel" data-workspace-carousel hidden>
@@ -26,53 +27,28 @@ import WorkspaceCard from "../WorkspaceCard/WorkspaceCard.astro";
       aria-label="Previous workspace view"><span aria-hidden="true">←</span></button
     >
     <div class="home-workspace-carousel__slides">
-      <article class="home-workspace-carousel__slide" data-workspace-slide="0">
-        <MeshGradient variant="review" /><div class="home-workspace-carousel__content">
-          <h2 id="workspace-carousel-title">Review</h2><div class="home-workspace-carousel__image">
-            <AppScreenshot
-              name="review"
-              alt="Crona Review terminal view comparing estimated and logged focus with mood, energy, and recovery across a week"
-              sizes="(min-width: 1024px) 78vw, 92vw"
-            />
-          </div><WorkspaceCard
-            variant="review"
-            label="review"
-            description="Compare estimated time with logged focus, mood, and energy."
-          />
-        </div>
-      </article>
-      <article class="home-workspace-carousel__slide" data-workspace-slide="1" hidden>
-        <MeshGradient variant="momentum" /><div class="home-workspace-carousel__content">
-          <h2>Momentum</h2><div
-            class="home-workspace-carousel__image"
+      {
+        workspaceViews.map((view, index) => (
+          <article
+            class="home-workspace-carousel__slide"
+            data-workspace-slide={index}
+            hidden={index !== 0}
           >
-            <AppScreenshot
-              name="momentum"
-              alt="Crona Momentum terminal view showing focus patterns and habit progress across a 30-day window"
-              sizes="(min-width: 1024px) 78vw, 92vw"
-            />
-          </div><WorkspaceCard
-            variant="momentum"
-            label="momentum"
-            description="Track habits and focus across the weeks."
-          />
-        </div>
-      </article>
-      <article class="home-workspace-carousel__slide" data-workspace-slide="2" hidden>
-        <MeshGradient variant="summary" /><div class="home-workspace-carousel__content">
-          <h2>Summary</h2><div class="home-workspace-carousel__image">
-            <AppScreenshot
-              name="summary"
-              alt="Crona Summary terminal view showing focus, issues, habits, agenda, wellbeing, and momentum"
-              sizes="(min-width: 1024px) 78vw, 92vw"
-            />
-          </div><WorkspaceCard
-            variant="summary"
-            label="summary"
-            description="Reconstruct the day without reconstructing it from memory."
-          />
-        </div>
-      </article>
+            <MeshGradient variant={view.mesh} />
+            <div class="home-workspace-carousel__content">
+              <h2 id={index === 0 ? "workspace-carousel-title" : undefined}>{view.title}</h2>
+              <div class="home-workspace-carousel__image">
+                <AppScreenshot
+                  name={view.screenshot}
+                  alt={view.alt}
+                  sizes="(min-width: 1024px) 78vw, 92vw"
+                />
+              </div>
+              <WorkspaceCard variant={view.id} label={view.label} description={view.description} />
+            </div>
+          </article>
+        ))
+      }
     </div>
     <button
       class="home-workspace-carousel__arrow home-workspace-carousel__arrow--next"
@@ -81,7 +57,7 @@ import WorkspaceCard from "../WorkspaceCard/WorkspaceCard.astro";
       aria-label="Next workspace view"><span aria-hidden="true">→</span></button
     >
     <p class="home-workspace-carousel__counter" data-workspace-counter aria-live="polite">
-      01 / 03
+      01 / {String(workspaceViews.length).padStart(2, "0")}
     </p>
   </section>
 </div>
@@ -153,7 +129,8 @@ import WorkspaceCard from "../WorkspaceCard/WorkspaceCard.astro";
     workspaceOpeners.forEach((button) =>
       button.addEventListener("click", () => {
         // Side screenshots in the landing stack rotate to the front instead of opening.
-        if (button.dataset.workspacePos && button.dataset.workspacePos !== "center") return;
+        const pos = button.closest<HTMLElement>("[data-workspace-pos]")?.dataset.workspacePos;
+        if (pos && pos !== "center") return;
         openWorkspaceCarousel(Number(button.dataset.workspaceOpen));
       }),
     );

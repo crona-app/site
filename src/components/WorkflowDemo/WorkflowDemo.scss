@@ -330,8 +330,19 @@
     font-size: 0.62rem;
   }
 
+  // Stack the scene steps; proportional columns are too narrow for their labels on phones.
+  .workflow-demo__flows {
+    grid-template-columns: 1fr !important;
+  }
+
   .workflow-demo__flows button {
-    padding-inline: 8px;
+    border-bottom: 1px solid var(--demo-line);
+    border-right: 0;
+    padding: 9px 10px;
+  }
+
+  .workflow-demo__flows button:last-child {
+    border-bottom: 0;
   }
 
   .workflow-demo__description {

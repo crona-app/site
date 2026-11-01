@@ -9,7 +9,37 @@ import RuntimeArchitecture from "../components/RuntimeArchitecture/RuntimeArchit
 import WorkspaceCard from "../components/WorkspaceCard/WorkspaceCard.astro";
 import WorkspaceCarousel from "../components/WorkspaceCarousel/WorkspaceCarousel.astro";
 import WorkflowDemo from "../components/WorkflowDemo/WorkflowDemo.astro";
+import { initialWorkspaceView, workspaceViews } from "../data/workspace-views";
+import { loadGitHubReleases } from "../lib/github-releases";
 import "./_home/index.scss";
+
+const workspacePosition = (index: number) => {
+  const offset = (index - initialWorkspaceView + workspaceViews.length) % workspaceViews.length;
+  if (offset === 0) return "center";
+  if (offset === 1) return "right";
+  if (offset === workspaceViews.length - 1) return "left";
+  return "hidden";
+};
+const pad = (value: number) => String(value).padStart(2, "0");
+
+let latestStable: { version: string; url: string; date: string | null } | undefined;
+try {
+  const release = (await loadGitHubReleases("https://github.com/webxsid/crona", 10)).find(
+    (item) => !item.draft && !item.prerelease && item.tag_name,
+  );
+  if (release?.tag_name)
+    latestStable = {
+      version: release.tag_name.replace(/^v?/, "v"),
+      url: release.html_url,
+      date: release.published_at
+        ? new Intl.DateTimeFormat("en", { dateStyle: "medium", timeZone: "UTC" }).format(
+            new Date(release.published_at),
+          )
+        : null,
+    };
+} catch {
+  // The trust line drops the release details when GitHub is unavailable.
+}
 ---
 
 <BaseLayout
@@ -64,7 +94,7 @@ import "./_home/index.scss";
   <!-- Workspace views: show the same record through three focused surfaces. -->
   <section class="home-features home-reveal" id="features" aria-labelledby="features-title">
     <div class="home-section-heading">
-      <h2 id="features-title">One record. Three ways to read it.</h2>
+      <h2 id="features-title">One record. Five ways to read it.</h2>
       <p>
         Look back at where your time went, see what you’re building toward, or get a clear picture
         of the day.
@@ -73,66 +103,36 @@ import "./_home/index.scss";
     <div class="home-workspace-screen" data-workspace-stack>
       <div class="home-workspace-screen__canvas" aria-label="Crona workspace views" role="group">
         <MeshGradient class="home-workspace-screen__mesh--desktop" variant="workspace" />
-        <button
-          class="home-workspace-screen__image home-workspace-screen__image--review"
-          type="button"
-          data-workspace-open="0"
-          data-workspace-pos="left"
-          aria-label="Show Review view"
-        >
-          <AppScreenshot
-            name="review"
-            alt="Crona Review terminal view comparing estimated and logged focus with mood, energy, and recovery across a week"
-            loading="eager"
-            sizes="(min-width: 1024px) 58vw, 100vw"
-          />
-        </button>
-        <button
-          class="home-workspace-screen__image home-workspace-screen__image--momentum"
-          type="button"
-          data-workspace-open="1"
-          data-workspace-pos="center"
-          aria-label="Enlarge Momentum view"
-        >
-          <AppScreenshot
-            name="momentum"
-            alt="Crona Momentum terminal view showing focus patterns and habit progress across a 30-day window"
-            loading="eager"
-            sizes="(min-width: 1024px) 58vw, 100vw"
-          />
-        </button>
-        <button
-          class="home-workspace-screen__image home-workspace-screen__image--summary"
-          type="button"
-          data-workspace-open="2"
-          data-workspace-pos="right"
-          aria-label="Show Summary view"
-        >
-          <AppScreenshot
-            name="summary"
-            alt="Crona Today view with the day summary showing focus, issues, habits, accountability, wellbeing, and momentum"
-            loading="eager"
-            sizes="(min-width: 1024px) 58vw, 100vw"
-          />
-        </button>
-        <WorkspaceCard
-          variant="review"
-          label="review"
-          description="Compare estimated time with logged focus, mood, and energy."
-          select={0}
-        />
-        <WorkspaceCard
-          variant="momentum"
-          label="momentum"
-          description="Track habits and focus across the weeks."
-          select={1}
-        />
-        <WorkspaceCard
-          variant="summary"
-          label="summary"
-          description="Reconstruct the day without reconstructing it from memory."
-          select={2}
-        />
+        {
+          workspaceViews.map((view, index) => (
+            <div
+              class:list={["home-workspace-screen__view", `home-workspace-screen__view--${view.id}`]}
+              data-workspace-pos={workspacePosition(index)}
+              style={`--crop-x: ${view.cropX}`}
+            >
+              <button
+                class="home-workspace-screen__image"
+                type="button"
+                data-workspace-open={index}
+                aria-label={`${index === initialWorkspaceView ? "Enlarge" : "Show"} ${view.title} view`}
+                style={`view-transition-name: workspace-${view.id}`}
+              >
+                <AppScreenshot
+                  name={view.screenshot}
+                  alt={view.alt}
+                  sizes="(max-width: 820px) 210vw, (min-width: 1024px) 52vw, 100vw"
+                />
+              </button>
+              <WorkspaceCard
+                variant={view.id}
+                label={view.label}
+                description={view.description}
+                select={index}
+                pressed={index === initialWorkspaceView}
+              />
+            </div>
+          ))
+        }
       </div>
     </div>
     <div class="home-workflow__footer">
@@ -140,7 +140,11 @@ import "./_home/index.scss";
         <button type="button" data-workspace-step="-1" aria-label="Previous workspace view">
           <span aria-hidden="true">←</span>
         </button>
-        <span data-workspace-label aria-live="polite">02 / 03 · momentum</span>
+        <span data-workspace-label aria-live="polite"
+          >{pad(initialWorkspaceView + 1)} / {pad(workspaceViews.length)} · {
+            workspaceViews[initialWorkspaceView].label
+          }</span
+        >
         <button type="button" data-workspace-step="1" aria-label="Next workspace view">
           <span aria-hidden="true">→</span>
         </button>
@@ -194,6 +198,20 @@ import "./_home/index.scss";
           ><span>[d]</span> read the docs</a
         >
       </div>
+      <ul class="home-closing__meta">
+        <li><a href="https://github.com/webxsid/crona" rel="noreferrer">open source · MIT</a></li>
+        {
+          latestStable && (
+            <li>
+              <a href={latestStable.url} rel="noreferrer">
+                latest stable {latestStable.version}
+                {latestStable.date && ` · ${latestStable.date}`}
+              </a>
+            </li>
+          )
+        }
+        <li>no account, no cloud</li>
+      </ul>
     </div>
     <InstallCommands />
   </section>

@@ -12,7 +12,8 @@ if (revealSections.length) {
           observer.unobserve(entry.target);
         });
       },
-      { threshold: 0.12 },
+      // Reveal slightly before a section enters the viewport.
+      { rootMargin: "0px 0px 15% 0px", threshold: 0 },
     );
     revealSections.forEach((section) => revealObserver.observe(section));
   }
@@ -170,39 +171,53 @@ if (demoVideo) {
 const workspaceStack = document.querySelector("[data-workspace-stack]");
 
 if (workspaceStack) {
-  const stackImages = [...workspaceStack.querySelectorAll("[data-workspace-open]")];
-  const stackCards = [...workspaceStack.querySelectorAll("[data-workspace-select]")];
+  const stackViews = [...workspaceStack.querySelectorAll("[data-workspace-pos]")];
   const stackSteps = [...document.querySelectorAll("[data-workspace-step]")];
   const stackLabel = document.querySelector("[data-workspace-label]");
-  const stackNames = stackCards.map((card) => card.querySelector(".home-workspace-screen__key")?.textContent ?? "");
+  const stackNames = stackViews.map(
+    (view) => view.querySelector(".home-workspace-screen__key")?.textContent ?? "",
+  );
+  const stackTitles = stackViews.map((view) =>
+    (view.querySelector(".home-workspace-screen__image")?.getAttribute("aria-label") ?? "")
+      .replace(/^(Enlarge|Show) /, "")
+      .replace(/ view$/, ""),
+  );
   const stackReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-  let stackActive = 1;
+  let stackActive = Math.max(
+    0,
+    stackViews.findIndex((view) => view.dataset.workspacePos === "center"),
+  );
 
-  // Ring order matches the DOM: left neighbour, active, right neighbour.
+  // The active view sits in the middle; its ring neighbours flank it and the rest wait hidden.
   const positionFor = (index) => {
-    const offset = (index - stackActive + stackImages.length) % stackImages.length;
-    return offset === 0 ? "center" : offset === 1 ? "right" : "left";
+    const offset = (index - stackActive + stackViews.length) % stackViews.length;
+    if (offset === 0) return "center";
+    if (offset === 1) return "right";
+    if (offset === stackViews.length - 1) return "left";
+    return "hidden";
   };
 
   const applyStack = () => {
-    stackImages.forEach((image, index) => {
+    stackViews.forEach((view, index) => {
       const pos = positionFor(index);
-      image.dataset.workspacePos = pos;
-      const name = stackNames[index];
-      image.setAttribute("aria-label", pos === "center" ? `Enlarge ${name} view` : `Show ${name} view`);
-    });
-    stackCards.forEach((card, index) => {
-      card.dataset.workspacePos = positionFor(index);
-      card.setAttribute("aria-pressed", String(index === stackActive));
+      view.dataset.workspacePos = pos;
+      const image = view.querySelector(".home-workspace-screen__image");
+      image?.setAttribute(
+        "aria-label",
+        `${pos === "center" ? "Enlarge" : "Show"} ${stackTitles[index]} view`,
+      );
+      view
+        .querySelector("[data-workspace-select]")
+        ?.setAttribute("aria-pressed", String(index === stackActive));
     });
     if (stackLabel) {
-      const count = String(stackImages.length).padStart(2, "0");
-      stackLabel.textContent = `${String(stackActive + 1).padStart(2, "0")} / ${count} · ${stackNames[stackActive]}`;
+      const pad = (value) => String(value).padStart(2, "0");
+      stackLabel.textContent = `${pad(stackActive + 1)} / ${pad(stackViews.length)} · ${stackNames[stackActive]}`;
     }
   };
 
   const selectStack = (index) => {
-    const next = (index + stackImages.length) % stackImages.length;
+    const next = (index + stackViews.length) % stackViews.length;
     if (next === stackActive) return;
     stackActive = next;
     if (document.startViewTransition && !stackReducedMotion.matches) {
@@ -216,16 +231,22 @@ if (workspaceStack) {
   workspaceStack.addEventListener(
     "click",
     (event) => {
-      const image = event.target.closest("[data-workspace-open]");
-      if (!image || image.dataset.workspacePos === "center") return;
+      const view = event.target.closest("[data-workspace-pos]");
+      if (!view) return;
+      if (event.target.closest("[data-workspace-select]")) {
+        selectStack(stackViews.indexOf(view));
+        return;
+      }
+      if (!event.target.closest("[data-workspace-open]") || view.dataset.workspacePos === "center")
+        return;
       event.stopPropagation();
-      selectStack(stackImages.indexOf(image));
+      selectStack(stackViews.indexOf(view));
     },
     true,
   );
-  stackCards.forEach((card, index) => card.addEventListener("click", () => selectStack(index)));
   stackSteps.forEach((button) =>
-    button.addEventListener("click", () => selectStack(stackActive + Number(button.dataset.workspaceStep))),
+    button.addEventListener("click", () =>
+      selectStack(stackActive + Number(button.dataset.workspaceStep)),
+    ),
   );
-  applyStack();
 }
