@@ -1,0 +1,3 @@
+# Mac app updates: the Sparkle feed and release notes, so installed apps never depend on the GitHub owner.
+# Change only the target when the repository moves.
+/updates/mac/*  https://crona-app.github.io/crona-macos/:splat  302
