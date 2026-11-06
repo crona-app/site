@@ -24,7 +24,7 @@ const pad = (value: number) => String(value).padStart(2, "0");
 
 let latestStable: { version: string; url: string; date: string | null } | undefined;
 try {
-  const release = (await loadGitHubReleases("https://github.com/webxsid/crona")).find(
+  const release = (await loadGitHubReleases("https://github.com/crona-app/crona")).find(
     (item) => !item.draft && !item.prerelease && item.tag_name,
   );
   if (release?.tag_name)
@@ -53,7 +53,7 @@ try {
       name: "Crona",
       url: "https://crona.work",
       logo: "https://crona.work/brand/marks/crona-dark.svg",
-      sameAs: ["https://github.com/webxsid/crona"],
+      sameAs: ["https://github.com/crona-app/crona"],
     },
     {
       "@context": "https://schema.org",
@@ -199,7 +199,7 @@ try {
         >
       </div>
       <ul class="home-closing__meta">
-        <li><a href="https://github.com/webxsid/crona" rel="noreferrer">open source · MIT</a></li>
+        <li><a href="https://github.com/crona-app/crona" rel="noreferrer">open source · MIT</a></li>
         {
           latestStable && (
             <li>

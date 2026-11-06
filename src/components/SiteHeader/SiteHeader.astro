@@ -15,12 +15,12 @@ const links = [
   { href: "/mac/", label: "Mac app" },
   { href: "/blog/", label: "Blog" },
   { href: "/releases/", label: "Releases" },
-  { href: "https://github.com/webxsid/crona", label: "GitHub" },
+  { href: "https://github.com/crona-app/crona", label: "GitHub" },
 ];
 
 let githubStars = "—";
 try {
-  const repository = await fetchGitHub<{ stargazers_count?: number }>("repos/webxsid/crona");
+  const repository = await fetchGitHub<{ stargazers_count?: number }>("repos/crona-app/crona");
   if (typeof repository.stargazers_count === "number")
     githubStars = repository.stargazers_count.toLocaleString("en-US");
 } catch {

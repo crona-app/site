@@ -61,7 +61,7 @@ I built this because I wanted a record of what I was doing without changing how 
 
 Ten months later, that's still the idea  
 
-[Get started with Crona](/#install) · [GitHub](https://github.com/webxsid/crona) · [Docs](https://docs.crona.work)  
+[Get started with Crona](/#install) · [GitHub](https://github.com/crona-app/crona) · [Docs](https://docs.crona.work)
 
 
 

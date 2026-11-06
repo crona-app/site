@@ -1,4 +1,4 @@
-const REPOSITORY_URL = "https://github.com/webxsid/crona";
+const REPOSITORY_URL = "https://github.com/crona-app/crona";
 
 const html = `<!doctype html>
 <html><head>

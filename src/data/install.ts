@@ -14,7 +14,7 @@ export interface InstallMethod {
 
 export type InstallMethodId = "brew" | "scoop" | "nix" | "sh" | "powershell";
 
-const scriptBase = "https://github.com/webxsid/crona/releases/latest/download";
+const scriptBase = "https://github.com/crona-app/crona/releases/latest/download";
 
 // Each release ships install scripts pinned to its own version, so /latest/ always installs the
 // newest build. They verify checksums, unpack bundled assets and stop a running daemon first.
@@ -42,7 +42,7 @@ export const installMethods: InstallMethod[] = [
     platforms: "Linux · Apple silicon Macs",
     intro:
       "Install from the crona flake. Needs flakes enabled (experimental-features = nix-command flakes); on older Nix, use profile install:",
-    install: ["nix profile add github:webxsid/crona#crona"],
+    install: ["nix profile add github:crona-app/crona#crona"],
     update: "nix profile upgrade crona",
   },
   {

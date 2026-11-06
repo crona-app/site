@@ -14,7 +14,7 @@ for (const path of [
     assert.equal(response.headers.get("Content-Type"), "text/html; charset=utf-8");
     assert.equal(response.headers.get("Cache-Control"), "public, max-age=3600");
     const body = await response.text();
-    assert.equal(body.split('<meta name="go-import" content="crona.work git https://github.com/webxsid/crona">').length - 1, 1);
+    assert.equal(body.split('<meta name="go-import" content="crona.work git https://github.com/crona-app/crona">').length - 1, 1);
     assert.ok(body.includes('name="go-source"'));
     assert.ok(body.includes('/blob/main{/dir}/{file}#L{line}'));
     assert.ok(body.includes('http-equiv="refresh"'));

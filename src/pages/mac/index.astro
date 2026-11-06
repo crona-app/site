@@ -8,7 +8,7 @@ import { loadGitHubReleases } from "../../lib/github-releases";
 import { resolveMacReleases, type MacRelease } from "../../lib/mac-releases";
 import "../_mac/mac.scss";
 
-const repoUrl = "https://github.com/webxsid/crona-macos";
+const repoUrl = "https://github.com/crona-app/crona-macos";
 const releasesUrl = `${repoUrl}/releases`;
 const releases = await loadGitHubReleases(repoUrl).catch(() => []);
 const resolved = resolveMacReleases(releases);
