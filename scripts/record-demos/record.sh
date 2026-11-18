@@ -85,34 +85,24 @@ reseed() {
   return 1
 }
 
-# A cleared database brings back first-run setup, default rest days (sat/sun) and a single
-# repo context. Walk through those off camera so every recording opens on a full Today view.
+# The dev seed already completes first-run setup, sets rest days and checks out a repo context.
+# Off camera, clear that context (so the header reads "All") and carry a few overdue tasks into
+# today, so every recording opens on a full Today view with tasks to pick from.
 prepare() {
   tmux kill-session -t "$SESSION" 2>/dev/null || true
-  # Always full width: first-run setup does not reflow for narrow terminals.
+  # Always full width: the dialogs used here do not reflow for narrow terminals.
   tmux new-session -d -s "$SESSION" -x 160 -y 40 "$TUI crona-tui-dev"
-  KEY_BEAT=0.25
-  wait_for "Let's get things set up."
-  key Right Right Right
-  wait_for "Start Crona"
-  key Enter
-  wait_for "[5] System"
-  key 5
-  wait_for "Rest & Streak Protection"
-  for _ in $(seq 19); do tmux send-keys -t "$SESSION" Down; done
-  sleep 0.3
-  tmux capture-pane -p -t "$SESSION" | grep -q "▶ Rest & Streak Protection" || {
-    echo "could not select rest days setting" >&2
-    return 1
-  }
-  key Enter Tab
-  wait_for "Select default rest weekdays"
-  key c Tab Tab
-  wait_for "Weekdays  None"
-  key C-s 1 c
-  wait_for "Stream"
+  KEY_BEAT=0.4
+  wait_for "Habits Due"
   key c
-  wait_for "All ·"
+  wait_for "Checkout Context"
+  key C-x
+  sleep 1
+  key Right
+  sleep 1
+  key r r r
+  key Left
+  sleep 1
   tmux send-keys -t "$SESSION" C-c
   sleep 1
   tmux kill-session -t "$SESSION" 2>/dev/null || true
@@ -129,7 +119,7 @@ record_flow() {
     "$TUI asciinema rec --quiet --overwrite \
       --output-format asciicast-v2 --idle-time-limit 2 --command crona-tui-dev '$cast'"
   tmux set-option -t "$SESSION" status off
-  wait_for "[1] Today"
+  wait_for "Habits Due"
   pause 1.2
 
   # shellcheck source=/dev/null

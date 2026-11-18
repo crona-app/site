@@ -13,5 +13,5 @@ wait_for "End Session"
 type_text "Outlined the release notes"
 pause 0.6
 key C-s
-wait_for "[1] Today"
+wait_for "Habits Due"
 pause 2

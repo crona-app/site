@@ -13,7 +13,7 @@ key Tab
 type_text "blog release"
 pause 1.2
 key C-s
-wait_for "[1] Today"
+wait_for "Habits Due"
 pause 1.2
 KEY_BEAT=0.35 select_row "Write the v1.10 release post"
 pause 3.5

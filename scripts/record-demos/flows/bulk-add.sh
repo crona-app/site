@@ -18,7 +18,7 @@ pause 1.5
 key Down
 pause 1.5
 key C-s
-wait_for "[1] Today"
+wait_for "Habits Due"
 pause 1.2
 KEY_BEAT=0.35 select_row "Ship install script docs"
 pause 3.5
